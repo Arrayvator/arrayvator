@@ -1,0 +1,354 @@
+# ============================================================
+# ТЕСТ ФУНКЦИЙ ДАТ И ВРЕМЕНИ
+# (errors/functions_db/dates.py)
+# ============================================================
+# Запуск: F5 в редакторе ArrayVator
+# ============================================================
+
+print("=")
+print("ТЕСТ ФУНКЦИЙ ДАТ И ВРЕМЕНИ")
+print("=")
+print("")
+
+
+# ============================================================
+# 1. date — конвертация формата
+# ============================================================
+print("▶ date")
+
+r = date("20.06.2025", "DD.MM.YYYY", "DD MMMM YYYY")
+print("  date(DD.MM.YYYY → DD MMMM YYYY):", r)
+
+r = date("06/20/2025", "MM/DD/YYYY", "DD.MM.YYYY")
+print("  date(MM/DD/YYYY → DD.MM.YYYY):", r)
+
+r = date("2025-06-20", "YYYY-MM-DD", "DD.MM.YYYY")
+print("  date(YYYY-MM-DD → DD.MM.YYYY):", r)
+print("")
+
+
+# ============================================================
+# 2. DateDiff
+# ============================================================
+print("▶ DateDiff")
+
+r = DateDiff("20.06.2024", "25.06.2024", "DD.MM.YYYY", "days")
+print("  DateDiff days (20→25 июня):", r)
+
+r = DateDiff("01.01.2025", "01.01.2026", "DD.MM.YYYY", "years")
+print("  DateDiff years (2025→2026):", r)
+
+r = DateDiff("01.01.2025", "01.02.2025", "DD.MM.YYYY", "months")
+print("  DateDiff months (янв→фев):", r)
+print("")
+
+
+# ============================================================
+# 3. datenow
+# ============================================================
+print("▶ datenow")
+
+r = datenow()
+print("  datenow():", r)
+
+r = datenow("DD.MM.YYYY")
+print('  datenow("DD.MM.YYYY"):', r)
+
+r = datenow("DD MMMM YYYY")
+print('  datenow("DD MMMM YYYY"):', r)
+print("")
+
+
+# ============================================================
+# 4. timenow
+# ============================================================
+print("▶ timenow")
+
+r = timenow()
+print("  timenow():", r)
+
+r = timenow("HH:MM")
+print('  timenow("HH:MM"):', r)
+print("")
+
+
+# ============================================================
+# 5. timestamp
+# ============================================================
+print("▶ timestamp")
+
+r = timestamp()
+print("  timestamp():", r)
+
+r = timestamp("DD.MM.YYYY HH:MM")
+print('  timestamp("DD.MM.YYYY HH:MM"):', r)
+print("")
+
+
+# ============================================================
+# 6. calendar
+# ============================================================
+print("▶ calendar")
+
+v = calendar("dd.mm.yyyy", 1, 2026, "ru")
+print("  calendar(январь 2026, ru):")
+print("    длина:", lenrow(v))
+print("    первое:", v[1, 1])
+print("    второе:", v[2, 1])
+print("")
+
+m = calendar("dd.mm.yyyy", all, 2026, "eu")
+print("  calendar(all 2026, eu):")
+print("    строк:", lenrow(m))
+print("    столбцов:", lencol(m))
+print("")
+
+
+# ============================================================
+# 7. calendarpro
+# ============================================================
+print("▶ calendarpro")
+
+m = calendarpro(2026, 1)
+print("  calendarpro(2026, 1):")
+print("    строк:", lenrow(m))
+print("    столбцов:", lencol(m))
+print("")
+
+m = calendarpro(2026, all)
+print("  calendarpro(2026, all):")
+print("    строк:", lenrow(m))
+print("    столбцов:", lencol(m))
+print("")
+
+
+# ============================================================
+# 8. year, month, day, quarter
+# ============================================================
+print("▶ year / month / day / quarter")
+
+r = year("20.06.2025")
+print("  year:", r)
+
+r = month("20.06.2025")
+print("  month:", r)
+
+r = day("20.06.2025")
+print("  day:", r)
+
+r = quarter("20.06.2025")
+print("  quarter:", r)
+print("")
+
+
+# ============================================================
+# 9. weekday / weekdayname / monthname
+# ============================================================
+print("▶ weekday / weekdayname / monthname")
+
+r = weekday("20.06.2025")
+print("  weekday (число):", r)
+
+r = weekdayname("20.06.2025")
+print("  weekdayname:", r)
+
+r = monthname("20.06.2025")
+print("  monthname:", r)
+print("")
+
+
+# ============================================================
+# 10. adddays / addmonths / addyears
+# ============================================================
+print("▶ adddays / addmonths / addyears")
+
+r = adddays("20.06.2025", 10)
+print("  adddays(+10):", r)
+
+r = adddays("20.06.2025", -5)
+print("  adddays(-5):", r)
+
+r = addmonths("20.06.2025", 2)
+print("  addmonths(+2):", r)
+
+r = addyears("20.06.2025", 1)
+print("  addyears(+1):", r)
+print("")
+
+
+# ============================================================
+# 11. datetrunc
+# ============================================================
+print("▶ datetrunc")
+
+r = datetrunc("20.06.2025", "day")
+print('  datetrunc("day"):', r)
+
+r = datetrunc("20.06.2025", "month")
+print('  datetrunc("month"):', r)
+
+r = datetrunc("20.06.2025", "quarter")
+print('  datetrunc("quarter"):', r)
+
+r = datetrunc("20.06.2025", "year")
+print('  datetrunc("year"):', r)
+print("")
+
+
+# ============================================================
+# 12. hour / minute / second
+# ============================================================
+print("▶ hour / minute / second")
+
+r = hour("14:30:15")
+print("  hour:", r)
+
+r = minute("14:30:15")
+print("  minute:", r)
+
+r = second("14:30:15")
+print("  second:", r)
+print("")
+
+
+# ============================================================
+# 13. ampm / is_pm
+# ============================================================
+print("▶ ampm / is_pm")
+
+r = ampm("02:30 PM")
+print('  ampm("02:30 PM"):', r)
+
+r = ampm("09:15 AM")
+print('  ampm("09:15 AM"):', r)
+
+r = is_pm("02:30 PM")
+print('  is_pm("02:30 PM"):', r)
+
+r = is_pm("09:15 AM")
+print('  is_pm("09:15 AM"):', r)
+print("")
+
+
+# ============================================================
+# 14. addhours / addminutes / addseconds
+# ============================================================
+print("▶ addhours / addminutes / addseconds")
+
+r = addhours("14:30:15", 2)
+print("  addhours(+2):", r)
+
+r = addhours("20.06.2025 23:00", 2)
+print("  addhours через сутки:", r)
+
+r = addminutes("14:30:15", 45)
+print("  addminutes(+45):", r)
+
+r = addseconds("14:30:15", 30)
+print("  addseconds(+30):", r)
+print("")
+
+
+# ============================================================
+# 15. timetrunc
+# ============================================================
+print("▶ timetrunc")
+
+r = timetrunc("14:30:15", "hour")
+print('  timetrunc("hour"):', r)
+
+r = timetrunc("14:30:15", "minute")
+print('  timetrunc("minute"):', r)
+
+r = timetrunc("14:30:15", "second")
+print('  timetrunc("second"):', r)
+print("")
+
+
+# ============================================================
+# 16. time — конвертер
+# ============================================================
+print("▶ time")
+
+r = time("02:30 PM", "hh:MM AM", "HH:MM")
+print("  time(12h → 24h):", r)
+
+r = time("14:30", "HH:MM", "hh:MM AM")
+print("  time(24h → 12h):", r)
+print("")
+
+
+# ============================================================
+# 17. is_valid_time
+# ============================================================
+print("▶ is_valid_time")
+
+r = is_valid_time("14:30:15")
+print('  is_valid_time("14:30:15"):', r)
+
+r = is_valid_time("14:30")
+print('  is_valid_time("14:30"):', r)
+
+r = is_valid_time("02:30 PM")
+print('  is_valid_time("02:30 PM"):', r)
+
+r = is_valid_time("25:99:99")
+print('  is_valid_time("25:99:99"):', r)
+
+r = is_valid_time("29.09.2026")
+print('  is_valid_time("29.09.2026"):', r)
+
+r = is_valid_time("abc")
+print('  is_valid_time("abc"):', r)
+print("")
+
+
+# ============================================================
+# 18. ВЕКТОР — срез столбца
+# ============================================================
+print("▶ Проверка на векторах (срез столбца)")
+
+m = ["Дата", "Время";
+     "20.06.2025", "14:30:15";
+     "21.07.2025", "15:45:30";
+     "22.08.2025", "09:15:00"]
+
+# Год из каждой даты
+r = year(m[:, "Дата"])
+print("  year(m[:, \"Дата\"]):", r)
+
+# Месяц из каждой даты
+r = month(m[:, "Дата"])
+print("  month(m[:, \"Дата\"]):", r)
+
+# Час из времени
+r = hour(m[:, "Время"])
+print("  hour(m[:, \"Время\"]):", r)
+
+# Минуты
+r = minute(m[:, "Время"])
+print("  minute(m[:, \"Время\"]):", r)
+print("")
+
+
+# ============================================================
+# 19. МАТРИЦА — добавить столбцы через addcolumn
+# ============================================================
+print("▶ addcolumn с датами")
+
+m2 = addcolumn(m, "Год", year(m[:, "Дата"]))
+print("  добавили столбец Год:")
+print("    строк:", lenrow(m2))
+print("    столбцов:", lencol(m2))
+
+m3 = addcolumn(m2, "Месяц", month(m[:, "Дата"]))
+print("  добавили столбец Месяц:")
+print("    столбцов:", lencol(m3))
+
+m4 = addcolumn(m3, "Квартал", quarter(m[:, "Дата"]))
+print("  добавили столбец Квартал:")
+print("    столбцов:", lencol(m4))
+print("")
+
+
+

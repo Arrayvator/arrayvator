@@ -1,0 +1,109 @@
+# ============================================================
+# ТЕСТ TRY / CATCH / ERROR
+# ============================================================
+
+print("=== 1. Успешный try — error = None ===")
+try {
+    x = 42
+    print("  x =", x)
+    print("  error внутри try:", error)
+} catch {
+    print("  НЕ ДОЛЖНО СЮДА ПОПАСТЬ")
+}
+print("  error после try:", error)
+print("")
+
+
+print("=== 2. Падение в try — переход в catch ===")
+try {
+    print("  до падения")
+    y = round(None)
+    print("  НЕ ДОЛЖНО СЮДА ПОПАСТЬ")
+} catch {
+    print("  поймали ошибку")
+    print("  error в catch:", error)
+}
+print("")
+
+
+print("=== 3. catch с переменной (e) ===")
+try {
+    z = int(None)
+} catch (e) {
+    print("  e =", e)
+    print("  error =", error)
+}
+print("")
+
+
+print("=== 4. Восстановление после catch ===")
+try {
+    a = round(None)
+} catch {
+    print("  поймали:", error)
+    a = 0
+}
+print("  a =", a)
+print("  error после catch:", error)
+print("")
+
+
+print("=== 5. Вложенные try ===")
+try {
+    print("  внешний try")
+    try {
+        b = round(None)
+    } catch {
+        print("    внутренний catch:", error)
+    }
+    print("  после внутреннего try")
+} catch {
+    print("  внешний catch — НЕ ДОЛЖНО ПОПАСТЬ")
+}
+print("")
+
+
+print("=== 6. Деление на ноль (не падает?) ===")
+try {
+    c = 10 / 0
+    print("  c =", c)
+} catch {
+    print("  поймали:", error)
+}
+print("")
+
+
+print("=== 7. Неопределённая переменная ===")
+try {
+    d = unknown_var_xyz
+} catch {
+    print("  поймали:", error)
+}
+print("")
+
+
+print("=== 8. Несуществующий файл ===")
+try {
+    m = OpenCSV("no_such_file_12345.csv")
+} catch {
+    print("  поймали:", error)
+}
+print("")
+
+
+print("=== 10. error после успешного catch ===")
+try {
+    f = round(None)
+} catch {
+    print("  поймали")
+}
+print("  error после:", error)
+print("")
+
+
+print("=== 11. error сразу после старта ===")
+print("  error в начале:", error)
+print("")
+
+
+print("=== ТЕСТ TRY ЗАВЕРШЁН ===")

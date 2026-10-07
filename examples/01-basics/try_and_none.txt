@@ -1,0 +1,29 @@
+print("=== 1.5. None через try/catch ===")
+
+try {
+    r = round(None)
+    print("round(None)       =", r)
+} catch {
+    print("round(None)       → ошибка:", error)
+}
+
+try {
+    r = int(None)
+    print("int(None)         =", r)
+} catch {
+    print("int(None)         → ошибка:", error)
+}
+
+try {
+    r = frac(None)
+    print("frac(None)        =", r)
+} catch {
+    print("frac(None)        → ошибка:", error)
+}
+
+try {
+    r = frac_digits(None)
+    print("frac_digits(None) =", r)
+} catch {
+    print("frac_digits(None) → ошибка:", error)
+}

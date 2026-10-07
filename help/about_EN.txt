@@ -1,0 +1,6 @@
+ArrayVator 2026
+
+Editor and interpreter for the ArrayVator language.
+
+Version: 1.0
+Year: 2026

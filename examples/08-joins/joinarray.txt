@@ -1,0 +1,273 @@
+# ============================================
+# JOINARRAY ЧЕРЕЗ КОНВЕРТАЦИЮ M ↔ BIGDATA
+# ============================================
+
+print("============================================")
+print("ЧАСТЬ 1: VERTICAL — Matrix → BigData → Matrix")
+print("============================================")
+
+a = ["ID", "Имя";
+     101,  "Аня";
+     102,  "Боб"]
+
+b = ["ID", "Имя";
+     103,  "Света";
+     104,  "Гена"]
+
+print("Исходная A (Matrix):")
+print(a)
+print("")
+print("Исходная B (Matrix):")
+print(b)
+
+# Конвертация Matrix → BigData
+bd_a = ToBigData(a)
+bd_b = ToBigData(b)
+
+print("")
+print("BigData A:")
+print(bd_a)
+print("")
+print("BigData B:")
+print(bd_b)
+
+# JOINARRAY на DuckDB
+bd_r = joinarray(bd_a, bd_b, vertical)
+
+print("")
+print("BigData результат (vertical):")
+print(bd_r)
+
+# Конвертация BigData → Matrix
+r1 = ToMatrix(bd_r)
+
+print("")
+print("Matrix результат (vertical):")
+print(r1)
+
+
+# ============================================
+print("")
+print("============================================")
+print("ЧАСТЬ 2: HORIZONTAL — Matrix → BigData → Matrix")
+print("============================================")
+
+c = ["Имя"; "Аня"; "Боб"; "Света"]
+d = ["Возраст"; 25; 30; 28]
+
+print("Исходная C (Matrix):")
+print(c)
+print("")
+print("Исходная D (Matrix):")
+print(d)
+
+# Конвертация
+bd_c = ToBigData(c)
+bd_d = ToBigData(d)
+
+# JOINARRAY horizontal на DuckDB
+bd_r2 = joinarray(bd_c, bd_d, horizontal)
+
+print("")
+print("BigData результат (horizontal):")
+print(bd_r2)
+
+# Обратно в Matrix
+r2 = ToMatrix(bd_r2)
+
+print("")
+print("Matrix результат (horizontal):")
+print(r2)
+
+
+# ============================================
+print("")
+print("============================================")
+print("ЧАСТЬ 3: 3 МАТРИЦЫ VERTICAL через конвертацию")
+print("============================================")
+
+p1 = ["ID", "Товар"; 1, "Яблоки"]
+p2 = ["ID", "Товар"; 2, "Бананы"]
+p3 = ["ID", "Товар"; 3, "Груши"]
+
+print("P1 (Matrix):")
+print(p1)
+print("")
+print("P2 (Matrix):")
+print(p2)
+print("")
+print("P3 (Matrix):")
+print(p3)
+
+# Конвертация всех трёх
+bd_p1 = ToBigData(p1)
+bd_p2 = ToBigData(p2)
+bd_p3 = ToBigData(p3)
+
+# JOINARRAY на DuckDB
+bd_r3 = joinarray(bd_p1, bd_p2, bd_p3, vertical)
+
+print("")
+print("BigData результат (3 матрицы vertical):")
+print(bd_r3)
+
+# Обратно в Matrix
+r3 = ToMatrix(bd_r3)
+
+print("")
+print("Matrix результат:")
+print(r3)
+
+
+# ============================================
+print("")
+print("============================================")
+print("ЧАСТЬ 4: 3 МАТРИЦЫ HORIZONTAL через конвертацию")
+print("============================================")
+
+q1 = ["Имя"; "Аня"; "Боб"; "Света"]
+q2 = ["Возраст"; 25; 30; 28]
+q3 = ["Город"; "Мск"; "Спб"; "Каз"]
+
+# Конвертация
+bd_q1 = ToBigData(q1)
+bd_q2 = ToBigData(q2)
+bd_q3 = ToBigData(q3)
+
+# JOINARRAY horizontal
+bd_r4 = joinarray(bd_q1, bd_q2, bd_q3, horizontal)
+
+print("")
+print("BigData результат (3 матрицы horizontal):")
+print(bd_r4)
+
+r4 = ToMatrix(bd_r4)
+
+print("")
+print("Matrix результат:")
+print(r4)
+
+
+# ============================================
+print("")
+print("============================================")
+print("ЧАСТЬ 5: СРАВНЕНИЕ — Matrix vs BigData")
+print("============================================")
+
+# VERTICAL — чисто Matrix
+r_matrix_v = joinarray(a, b, vertical)
+
+# VERTICAL — через BigData
+bd_a2 = ToBigData(a)
+bd_b2 = ToBigData(b)
+bd_r5 = joinarray(bd_a2, bd_b2, vertical)
+r_bigdata_v = ToMatrix(bd_r5)
+
+print("VERTICAL — Matrix:")
+print(r_matrix_v)
+print("")
+print("VERTICAL — BigData → Matrix:")
+print(r_bigdata_v)
+
+
+# ============================================
+print("")
+print("============================================")
+print("ЧАСТЬ 6: HORIZONTAL — сравнение")
+print("============================================")
+
+r_matrix_h = joinarray(c, d, horizontal)
+
+bd_c2 = ToBigData(c)
+bd_d2 = ToBigData(d)
+bd_r6 = joinarray(bd_c2, bd_d2, horizontal)
+r_bigdata_h = ToMatrix(bd_r6)
+
+print("HORIZONTAL — Matrix:")
+print(r_matrix_h)
+print("")
+print("HORIZONTAL — BigData → Matrix:")
+print(r_bigdata_h)
+
+
+# ============================================
+print("")
+print("============================================")
+print("ЧАСТЬ 7: JOINARRAY + JOINVECTOR через конвертацию")
+print("============================================")
+
+# Данные в Matrix
+t1 = ["Имя"; "Аня"; "Боб"; "Света"]
+t2 = ["Возраст"; 25; 30; 28]
+
+# Конвертация
+bd_t1 = ToBigData(t1)
+bd_t2 = ToBigData(t2)
+
+# JOINARRAY на DuckDB
+bd_joined = joinarray(bd_t1, bd_t2, horizontal)
+
+# Обратно в Matrix
+m_joined = ToMatrix(bd_joined)
+
+print("Объединённая таблица:")
+print(m_joined)
+
+# JOINVECTOR на Matrix
+names = joinvector(m_joined[:, "Имя"], ", ")
+ages  = joinvector(m_joined[:, "Возраст"], ", ")
+
+print("")
+print("Имена: " + names)
+print("Возрасты: " + ages)
+
+
+# ============================================
+print("")
+print("============================================")
+print("ЧАСТЬ 8: БОЛЬШИЕ ДАННЫЕ через конвертацию")
+print("============================================")
+
+# Создать большую матрицу (10 000 строк)
+n = 10000
+big = matrix(n + 1, 3)
+big[1, :] = ["ID", "Группа", "Сумма"]
+
+for i = 2 to n + 1 do {
+    big[i, 1] = i - 1
+    big[i, 2] = (i % 5) + 1
+    big[i, 3] = 1000 + (i % 500)
+}
+
+# Ещё одна матрица
+big2 = matrix(1001, 2)
+big2[1, :] = ["Группа", "Название"]
+
+for i = 2 to 1001 do {
+    big2[i, 1] = i
+    big2[i, 2] = "Группа_" + to_string(i)
+}
+
+print("Матрица big: " + to_string(lenrow(big)) + " строк")
+print("Матрица big2: " + to_string(lenrow(big2)) + " строк")
+
+# Конвертация в BigData
+bd_big  = ToBigData(big)
+bd_big2 = ToBigData(big2)
+
+# JOINARRAY vertical
+bd_combined = joinarray(bd_big, bd_big2, vertical)
+
+print("")
+print("Результат BigData:")
+print(ToMatrix(bd_combined, 10))
+
+print("")
+print("Общее количество строк: " + to_string(lenrow(bd_combined)))
+
+
+# ============================================
+print("")
+print("============================================")
+print("ВСЕ ТЕСТЫ JOINARRAY ЧЕРЕЗ КОНВЕРТАЦИЮ ЗАВЕРШЕНЫ")
+print("============================================")

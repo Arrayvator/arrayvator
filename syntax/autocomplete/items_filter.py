@@ -1,0 +1,440 @@
+# syntax/autocomplete/items_filter.py
+"""
+Описания функций фильтрации и удаления: filterif, deleteif, delete.
+"""
+
+RU = {
+    # ============================================================
+    # FILTERIF — оставить строки по условию
+    # ============================================================
+    'filterif': {
+        'signature': 'filterif(m[:, "X"] == "Y")',
+        'description': (
+            'Оставляет строки, где условие ИСТИННО (аналог SQL WHERE).\n'
+            '\n'
+            'МНЕМОНИКА:\n'
+            '     filterif( m[:, "X"] == "Y" )\n'
+            '               └─ что смотрим ─┘\n'
+            '               где условие истинно —\n'
+            '               строку ОСТАВИТЬ\n'
+            '\n'
+            'ОПЕРАТОРЫ В УСЛОВИИ:\n'
+            '     ==  равно\n'
+            '     !=  не равно\n'
+            '     <   меньше\n'
+            '     >   больше\n'
+            '     <=  меньше или равно\n'
+            '     >=  больше или равно\n'
+            '     and логическое И\n'
+            '     or  логическое ИЛИ\n'
+            '     not логическое НЕ\n'
+            '\n'
+            'МОДИФИКАТОРЫ (для строк):\n'
+            '     inside — поиск подстроки\n'
+            '     ignore — без учёта регистра\n'
+            '\n'
+            'ПРАВИЛА:\n'
+            '  • Заголовок СОХРАНЯЕТСЯ.\n'
+            '  • Порядок строк СОХРАНЯЕТСЯ.\n'
+            '  • Возвращает НОВУЮ матрицу.\n'
+            '  • НЕ мутирует исходную:\n'
+            '        m = filterif(m[:, "X"] == "Y")\n'
+            '  • Работает с Matrix и DuckDB.\n'
+            '  • Работает с вектором: filterif(v > 20).'
+        ),
+        'example': (
+            '# Оставить только IT-отдел\n'
+            'r = filterif(m[:, "Отдел"] == "IT")\n'
+            '\n'
+            '# Мутация (записать обратно)\n'
+            'm = filterif(m[:, "Отдел"] == "IT")\n'
+            '\n'
+            '# Составное условие\n'
+            'r = filterif(m[:, "Отдел"] == "IT" and m[:, "Возраст"] > 25)\n'
+            '\n'
+            '# ИЛИ\n'
+            'r = filterif(m[:, "Отдел"] == "IT" or m[:, "Отдел"] == "HR")\n'
+            '\n'
+            '# Отрицание\n'
+            'r = filterif(not (m[:, "Отдел"] == "IT"))\n'
+            '\n'
+            '# Поиск подстроки\n'
+            'r = filterif(m[:, "Имя"] == "ов", inside)\n'
+            '\n'
+            '# Без учёта регистра\n'
+            'r = filterif(m[:, "Имя"] == "аня", ignore)\n'
+            '\n'
+            '# Вектор\n'
+            'r = filterif(v > 20)'
+        ),
+        'matrix_example': (
+            '# ДАНО:\n'
+            '#\n'
+            '#   m = ["Имя", "Отдел", "Возраст";\n'
+            '#        "Аня", "IT",    25;\n'
+            '#        "Боб", "HR",    32;\n'
+            '#        "Света","IT",  28;\n'
+            '#        "Гена","Sales", 41]\n'
+            '\n'
+            'r = filterif(m[:, "Отдел"] == "IT")\n'
+            'print(r)\n'
+            '\n'
+            '# ВЫВОД:\n'
+            '#\n'
+            '#   Имя    Отдел  Возраст\n'
+            '#   Аня    IT     25\n'
+            '#   Света  IT     28\n'
+            '\n'
+            '# Составное условие:\n'
+            'r2 = filterif(m[:, "Отдел"] == "IT" and m[:, "Возраст"] > 26)\n'
+            'print(r2)\n'
+            '\n'
+            '# ВЫВОД:\n'
+            '#\n'
+            '#   Имя    Отдел  Возраст\n'
+            '#   Света  IT     28'
+        ),
+    },
+
+    # ============================================================
+    # DELETEIF — удалить строки по условию
+    # ============================================================
+    'deleteif': {
+        'signature': 'deleteif(m[:, "X"] == "Y")',
+        'description': (
+            'Удаляет строки, где условие ИСТИННО\n'
+            '(обратное к filterif).\n'
+            '\n'
+            'МНЕМОНИКА:\n'
+            '     deleteif( m[:, "X"] == "Y" )\n'
+            '               └─ что смотрим ─┘\n'
+            '               где условие истинно —\n'
+            '               строку УДАЛИТЬ\n'
+            '\n'
+            'ОТЛИЧИЕ ОТ filterif:\n'
+            '     filterif — ОСТАВИТЬ где истинно.\n'
+            '     deleteif — УДАЛИТЬ где истинно.\n'
+            '\n'
+            '     filterif(m[:, "Отдел"] == "IT")\n'
+            '         → оставит только IT.\n'
+            '\n'
+            '     deleteif(m[:, "Отдел"] == "IT")\n'
+            '         → удалит IT, оставит остальных.\n'
+            '\n'
+            'ПРАВИЛА:\n'
+            '  • Заголовок СОХРАНЯЕТСЯ.\n'
+            '  • Возвращает НОВУЮ матрицу.\n'
+            '  • НЕ мутирует исходную:\n'
+            '        m = deleteif(m[:, "X"] == "Y")'
+        ),
+        'example': (
+            '# Удалить IT-отдел\n'
+            'r = deleteif(m[:, "Отдел"] == "IT")\n'
+            '\n'
+            '# Мутация\n'
+            'm = deleteif(m[:, "Отдел"] == "IT")\n'
+            '\n'
+            '# Удалить по числовому условию\n'
+            'r = deleteif(m[:, "Возраст"] < 18)\n'
+            '\n'
+            '# Составное условие\n'
+            'r = deleteif(m[:, "Отдел"] == "IT" and m[:, "Возраст"] < 30)'
+        ),
+        'matrix_example': (
+            '# ДАНО:\n'
+            '#\n'
+            '#   m = ["Имя", "Отдел";\n'
+            '#        "Аня", "IT";\n'
+            '#        "Боб", "HR";\n'
+            '#        "Света","IT";\n'
+            '#        "Гена","Sales"]\n'
+            '\n'
+            'r = deleteif(m[:, "Отдел"] == "IT")\n'
+            'print(r)\n'
+            '\n'
+            '# ВЫВОД:\n'
+            '#\n'
+            '#   Имя    Отдел\n'
+            '#   Боб    HR\n'
+            '#   Гена   Sales'
+        ),
+    },
+
+    # ============================================================
+    # DELETE — удалить конкретную строку/столбец
+    # ============================================================
+    'delete': {
+        'signature': 'delete(m[индекс])',
+        'description': (
+            'Удаляет строку/столбец/диапазон по индексу.\n'
+            '\n'
+            'МНЕМОНИКА:\n'
+            '     delete( m[индекс] )\n'
+            '             └── что удалить ──┘\n'
+            '\n'
+            'ФОРМАТЫ:\n'
+            '     delete(m[2, :])         — удалить строку 2\n'
+            '     delete(m[:, "Имя"])     — удалить столбец "Имя"\n'
+            '     delete(m[:, 2:5])       — удалить столбцы 2..5\n'
+            '     delete(m[last 2, :])    — удалить последние 2 строки\n'
+            '     delete(m[:, last 1])    — удалить последний столбец\n'
+            '\n'
+            'ПРАВИЛА:\n'
+            '  • Удаляется ЦЕЛАЯ строка или ЦЕЛЫЙ столбец.\n'
+            '  • Нельзя удалить часть ячеек.\n'
+            '  • Возвращает НОВУЮ матрицу.\n'
+            '  • НЕ мутирует исходную:\n'
+            '        m = delete(m[2, :])\n'
+            '  • Работает с Matrix и DuckDB.'
+        ),
+        'example': (
+            '# Удалить строку\n'
+            'r = delete(m[2, :])\n'
+            '\n'
+            '# Удалить столбец по имени\n'
+            'm = delete(m[:, "Имя"])\n'
+            '\n'
+            '# Удалить диапазон столбцов\n'
+            'r = delete(m[:, 2:5])\n'
+            '\n'
+            '# Удалить последние 3 строки\n'
+            'r = delete(m[last 3, :])\n'
+            '\n'
+            '# Удалить последний столбец\n'
+            'r = delete(m[:, end])'
+        ),
+        'matrix_example': (
+            '# ДАНО:\n'
+            '#\n'
+            '#   m = ["A", "B", "C";\n'
+            '#        1,   2,   3;\n'
+            '#        4,   5,   6;\n'
+            '#        7,   8,   9]\n'
+            '\n'
+            'r = delete(m[2, :])\n'
+            'print(r)\n'
+            '\n'
+            '# ВЫВОД (удалена строка 2):\n'
+            '#\n'
+            '#   A  B  C\n'
+            '#   1  2  3\n'
+            '#   7  8  9\n'
+            '\n'
+            'r2 = delete(m[:, "B"])\n'
+            'print(r2)\n'
+            '\n'
+            '# ВЫВОД (удалён столбец B):\n'
+            '#\n'
+            '#   A  C\n'
+            '#   1  3\n'
+            '#   4  6\n'
+            '#   7  9'
+        ),
+    },
+}
+
+
+EN = {
+    # ============================================================
+    # FILTERIF
+    # ============================================================
+    'filterif': {
+        'signature': 'filterif(m[:, "X"] == "Y")',
+        'description': (
+            'Keep rows where the condition is TRUE (SQL WHERE analog).\n'
+            '\n'
+            'MNEMONIC:\n'
+            '     filterif( m[:, "X"] == "Y" )\n'
+            '               └─ what to check ─┘\n'
+            '               where TRUE —\n'
+            '               KEEP the row\n'
+            '\n'
+            'OPERATORS IN CONDITION:\n'
+            '     ==  equal\n'
+            '     !=  not equal\n'
+            '     <   less than\n'
+            '     >   greater than\n'
+            '     <=  less or equal\n'
+            '     >=  greater or equal\n'
+            '     and logical AND\n'
+            '     or  logical OR\n'
+            '     not logical NOT\n'
+            '\n'
+            'MODIFIERS (for strings):\n'
+            '     inside — substring search\n'
+            '     ignore — case-insensitive\n'
+            '\n'
+            'RULES:\n'
+            '  • Header is PRESERVED.\n'
+            '  • Row order is PRESERVED.\n'
+            '  • Returns a NEW matrix.\n'
+            '  • Does NOT mutate the source:\n'
+            '        m = filterif(m[:, "X"] == "Y")\n'
+            '  • Works with Matrix and DuckDB.\n'
+            '  • Works with vectors: filterif(v > 20).'
+        ),
+        'example': (
+            '# Keep only IT department\n'
+            'r = filterif(m[:, "Dept"] == "IT")\n'
+            '\n'
+            '# Mutation (save back)\n'
+            'm = filterif(m[:, "Dept"] == "IT")\n'
+            '\n'
+            '# Compound condition\n'
+            'r = filterif(m[:, "Dept"] == "IT" and m[:, "Age"] > 25)\n'
+            '\n'
+            '# OR\n'
+            'r = filterif(m[:, "Dept"] == "IT" or m[:, "Dept"] == "HR")\n'
+            '\n'
+            '# Negation\n'
+            'r = filterif(not (m[:, "Dept"] == "IT"))\n'
+            '\n'
+            '# Substring search\n'
+            'r = filterif(m[:, "Name"] == "ov", inside)\n'
+            '\n'
+            '# Case-insensitive\n'
+            'r = filterif(m[:, "Name"] == "anna", ignore)\n'
+            '\n'
+            '# Vector\n'
+            'r = filterif(v > 20)'
+        ),
+        'matrix_example': (
+            '# INPUT:\n'
+            '#\n'
+            '#   m = ["Name", "Dept", "Age";\n'
+            '#        "Anna", "IT",   25;\n'
+            '#        "Bob",  "HR",   32;\n'
+            '#        "Eve",  "IT",   28;\n'
+            '#        "Greg", "Sales",41]\n'
+            '\n'
+            'r = filterif(m[:, "Dept"] == "IT")\n'
+            'print(r)\n'
+            '\n'
+            '# OUTPUT:\n'
+            '#\n'
+            '#   Name  Dept  Age\n'
+            '#   Anna  IT    25\n'
+            '#   Eve   IT    28'
+        ),
+    },
+
+    # ============================================================
+    # DELETEIF
+    # ============================================================
+    'deleteif': {
+        'signature': 'deleteif(m[:, "X"] == "Y")',
+        'description': (
+            'Delete rows where the condition is TRUE\n'
+            '(opposite of filterif).\n'
+            '\n'
+            'MNEMONIC:\n'
+            '     deleteif( m[:, "X"] == "Y" )\n'
+            '               └─ what to check ─┘\n'
+            '               where TRUE —\n'
+            '               DELETE the row\n'
+            '\n'
+            'DIFFERENCE FROM filterif:\n'
+            '     filterif — KEEP where TRUE.\n'
+            '     deleteif — DELETE where TRUE.\n'
+            '\n'
+            'RULES:\n'
+            '  • Header is PRESERVED.\n'
+            '  • Returns a NEW matrix.\n'
+            '  • Does NOT mutate the source:\n'
+            '        m = deleteif(m[:, "X"] == "Y")'
+        ),
+        'example': (
+            '# Delete IT department\n'
+            'r = deleteif(m[:, "Dept"] == "IT")\n'
+            '\n'
+            '# Mutation\n'
+            'm = deleteif(m[:, "Dept"] == "IT")\n'
+            '\n'
+            '# Delete by numeric condition\n'
+            'r = deleteif(m[:, "Age"] < 18)\n'
+            '\n'
+            '# Compound condition\n'
+            'r = deleteif(m[:, "Dept"] == "IT" and m[:, "Age"] < 30)'
+        ),
+        'matrix_example': (
+            '# INPUT:\n'
+            '#\n'
+            '#   m = ["Name", "Dept";\n'
+            '#        "Anna", "IT";\n'
+            '#        "Bob",  "HR";\n'
+            '#        "Eve",  "IT";\n'
+            '#        "Greg", "Sales"]\n'
+            '\n'
+            'r = deleteif(m[:, "Dept"] == "IT")\n'
+            'print(r)\n'
+            '\n'
+            '# OUTPUT:\n'
+            '#\n'
+            '#   Name  Dept\n'
+            '#   Bob   HR\n'
+            '#   Greg  Sales'
+        ),
+    },
+
+    # ============================================================
+    # DELETE
+    # ============================================================
+    'delete': {
+        'signature': 'delete(m[index])',
+        'description': (
+            'Delete a row/column/range by index.\n'
+            '\n'
+            'MNEMONIC:\n'
+            '     delete( m[index] )\n'
+            '             └─ what to delete ─┘\n'
+            '\n'
+            'FORMATS:\n'
+            '     delete(m[2, :])         — delete row 2\n'
+            '     delete(m[:, "Name"])    — delete column "Name"\n'
+            '     delete(m[:, 2:5])       — delete columns 2..5\n'
+            '     delete(m[last 2, :])    — delete last 2 rows\n'
+            '     delete(m[:, last 1])    — delete last column\n'
+            '\n'
+            'RULES:\n'
+            '  • Delete a WHOLE row or a WHOLE column.\n'
+            '  • Cannot delete part of cells.\n'
+            '  • Returns a NEW matrix.\n'
+            '  • Does NOT mutate the source:\n'
+            '        m = delete(m[2, :])\n'
+            '  • Works with Matrix and DuckDB.'
+        ),
+        'example': (
+            '# Delete a row\n'
+            'r = delete(m[2, :])\n'
+            '\n'
+            '# Delete a column by name\n'
+            'm = delete(m[:, "Name"])\n'
+            '\n'
+            '# Delete a range of columns\n'
+            'r = delete(m[:, 2:5])\n'
+            '\n'
+            '# Delete last 3 rows\n'
+            'r = delete(m[last 3, :])\n'
+            '\n'
+            '# Delete last column\n'
+            'r = delete(m[:, end])'
+        ),
+        'matrix_example': (
+            '# INPUT:\n'
+            '#\n'
+            '#   m = ["A", "B", "C";\n'
+            '#        1,   2,   3;\n'
+            '#        4,   5,   6;\n'
+            '#        7,   8,   9]\n'
+            '\n'
+            'r = delete(m[2, :])\n'
+            'print(r)\n'
+            '\n'
+            '# OUTPUT (row 2 deleted):\n'
+            '#\n'
+            '#   A  B  C\n'
+            '#   1  2  3\n'
+            '#   7  8  9'
+        ),
+    },
+}

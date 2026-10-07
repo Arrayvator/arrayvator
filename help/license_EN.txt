@@ -1,0 +1,5 @@
+LICENSE
+
+Copyright (c) 2026 ArrayVator
+
+Use, copying and distribution allowed under MIT terms.

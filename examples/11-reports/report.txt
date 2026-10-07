@@ -1,0 +1,28 @@
+m = ["Товар",  "Продажи";
+     "Яблоки", 120;
+     "Бананы", 80;
+     "Груши",  150;
+     "Сливы",  50]
+
+print("=== ИСХОДНАЯ МАТРИЦА ===")
+print(m)
+print("")
+
+report("Продажи фруктов", "fruits_report.html")
+
+report_section("1. Исходные данные")
+
+report_text("Продажи фруктов за месяц.")
+
+report_table(m, title "Таблица продаж")
+
+report_section("2. График продаж")
+
+report_chart(bar, m[:, "Товар"], m[:, "Продажи"],
+             title "Продажи по товарам")
+
+report_save()
+print("save: OK")
+print("")
+
+print("=== ОТЧЁТ СОХРАНЁН: fruits_report.html ===")

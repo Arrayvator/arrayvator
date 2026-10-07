@@ -1,0 +1,8 @@
+pyinstaller
+duckdb
+python-calamine
+pyexcelerate
+openpyxl
+matplotlib
+plotly
+playwright

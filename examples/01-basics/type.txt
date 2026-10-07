@@ -1,0 +1,123 @@
+# ============================================================
+# ТЕСТ 1: type() — определение типа значения
+# ============================================================
+print("=== ТЕСТ 1: type() ===")
+print("type(42)      =", type(42))
+print("type(3.14)    =", type(3.14))
+print("type(\"abc\")   =", type("abc"))
+print("type(true)    =", type(true))
+print("type(false)   =", type(false))
+print("type(None)    =", type(None))
+
+v = [1, 2, 3]
+print("type(v)       =", type(v))
+
+m = ["A", "B"; 1, 2]
+print("type(m)       =", type(m))
+print("")
+
+
+# ============================================================
+# ТЕСТ 2: is_number() — проверка на число
+# ============================================================
+print("=== ТЕСТ 2: is_number() ===")
+print("is_number(42)     =", is_number(42))
+print("is_number(3.14)   =", is_number(3.14))
+print("is_number(\"42\")   =", is_number("42"))
+print("is_number(true)   =", is_number(true))
+print("is_number(None)   =", is_number(None))
+
+v2 = [10, "abc", 3.14, true, None]
+r2 = is_number(v2)
+print("is_number([10, \"abc\", 3.14, true, None])")
+print("  →", r2)
+print("")
+
+
+# ============================================================
+# ТЕСТ 3: is_integer() — проверка на целое
+# ============================================================
+print("=== ТЕСТ 3: is_integer() ===")
+print("is_integer(42)    =", is_integer(42))
+print("is_integer(3.14)  =", is_integer(3.14))
+print("is_integer(\"42\")  =", is_integer("42"))
+print("is_integer(true)  =", is_integer(true))
+print("")
+
+
+# ============================================================
+# ТЕСТ 4: is_float() — проверка на float
+# ============================================================
+print("=== ТЕСТ 4: is_float() ===")
+print("is_float(3.14)    =", is_float(3.14))
+print("is_float(42)      =", is_float(42))
+print("is_float(\"3.14\")  =", is_float("3.14"))
+print("")
+
+
+# ============================================================
+# ТЕСТ 5: is_string() — проверка на строку
+# ============================================================
+print("=== ТЕСТ 5: is_string() ===")
+print("is_string(\"abc\")  =", is_string("abc"))
+print("is_string(42)     =", is_string(42))
+print("is_string(\"\")     =", is_string(""))
+print("")
+
+
+# ============================================================
+# ТЕСТ 6: is_boolean() — проверка на bool
+# ============================================================
+print("=== ТЕСТ 6: is_boolean() ===")
+print("is_boolean(true)  =", is_boolean(true))
+print("is_boolean(false) =", is_boolean(false))
+print("is_boolean(1)     =", is_boolean(1))
+print("is_boolean(0)     =", is_boolean(0))
+print("")
+
+
+# ============================================================
+# ТЕСТ 7: to_string() — в строку
+# ============================================================
+print("=== ТЕСТ 7: to_string() ===")
+print("to_string(42)     =", to_string(42))
+print("to_string(3.14)   =", to_string(3.14))
+print("to_string(true)   =", to_string(true))
+print("to_string(None)   =", to_string(None))
+
+v3 = [1, 2, 3]
+r3 = to_string(v3)
+print("to_string([1, 2, 3]) →", r3)
+print("")
+
+
+# ============================================================
+# ТЕСТ 8: to_number() — в число
+# ============================================================
+print("=== ТЕСТ 8: to_number() ===")
+print("to_number(\"42\")    =", to_number("42"))
+print("to_number(\"3.14\")  =", to_number("3.14"))
+print("to_number(\"abc\")   =", to_number("abc"))
+print("to_number(\"\")      =", to_number(""))
+
+v4 = ["10", "20", "abc", "30"]
+r4 = to_number(v4)
+print("to_number([\"10\", \"20\", \"abc\", \"30\"])")
+print("  →", r4)
+print("")
+
+
+# ============================================================
+# ТЕСТ 9: is_valid_time() — проверка времени
+# ============================================================
+print("=== ТЕСТ 9: is_valid_time() ===")
+print("is_valid_time(\"14:30:15\")     =", is_valid_time("14:30:15"))
+print("is_valid_time(\"14:30\")        =", is_valid_time("14:30"))
+print("is_valid_time(\"02:30 PM\")     =", is_valid_time("02:30 PM"))
+print("is_valid_time(\"09:15 AM\")     =", is_valid_time("09:15 AM"))
+print("is_valid_time(\"25:99:99\")     =", is_valid_time("25:99:99"))
+print("is_valid_time(\"29.09.2026\")   =", is_valid_time("29.09.2026"))
+print("is_valid_time(None)            =", is_valid_time(None))
+print("")
+
+

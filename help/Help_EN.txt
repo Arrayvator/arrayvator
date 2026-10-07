@@ -1,0 +1,3033 @@
+================================================================
+ARRAYVATOR — A DATA PROCESSING LANGUAGE
+================================================================
+
+WHAT IT IS
+----------------------------------------------------------------
+ArrayVator is a programming language for processing tabular
+data. It was built for analysts, economists, marketers,
+accountants, researchers, and everyone who works with tables:
+Excel, CSV, Parquet, SQLite databases.
+
+Instead of complex code and dozens of libraries — a single,
+readable language where every operation reads like an
+ordinary sentence:
+
+    m = filterif(m[:, "Department"] == "IT")
+    m = sort(m[:, "Salary"], ZA)
+    m = addcolumn(m, "Tax", m[:, "Salary"] * 0.13)
+
+This is not Python. Not R. Not SQL. This is a separate language
+purpose-built so that a person without a programming background
+can learn it in a single evening.
+
+----------------------------------------------------------------
+WHY IT EXISTS
+----------------------------------------------------------------
+• Process tables without Excel and without VBA.
+• Do data analysis without Python and without pandas.
+• Build pivot tables without Excel's pivot tables.
+• Build charts without matplotlib.
+• Produce reports without Word and without layout tools.
+• Compile a finished program into a .exe and hand it to a
+  colleague with no installation required.
+
+One file with code — and the entire analysis logic is in your
+hands. No dependencies, no version conflicts.
+
+----------------------------------------------------------------
+WHAT IS BUILT INTO THE LANGUAGE
+----------------------------------------------------------------
+More than 300 functions. Everything an analyst needs —
+out of the box:
+
+• Filtering, sorting, removing duplicates.
+• Grouping, aggregation, pivot / unpivot tables.
+• Conditional aggregates: sumif, countif, avgif, minif, maxif.
+• Window functions: rownumber, rank, lag, lead, winsum.
+• ABC analysis, Pareto analysis, anomaly detection
+  (iqr, zscore, percentile).
+• Dates: year, month, day, adddays, datetrunc, calendar.
+• Text: trim, clean, split, replacetext, deletetext.
+• None handling: isnone, fillna, dropna, coalesce, noneif.
+• SQL-like operations: join, groupby, having.
+• Files: Excel, CSV, TXT, Parquet, SQLite.
+• BigData mode on DuckDB: up to a billion rows, ~50 MB RAM.
+• Charts: bar, line, pie, hist, scatter, box, heatmap, pair.
+• HTML reports with interactive Plotly charts.
+• Matrix ↔ DuckDB conversion in a single line.
+
+----------------------------------------------------------------
+THE MAIN IDEA — READABILITY
+----------------------------------------------------------------
+ArrayVator is built on a simple principle: code should be
+understandable by a human, not only by a machine.
+
+    m = deleteif(m[:, "Department"] == "IT")
+
+Reads in plain English: "delete rows where Department equals IT".
+No braces, no indices, no commas — just a phrase.
+
+Function names are short, meaningful, in English:
+filterif, sort, groupby, sumif, vlookup, transpose.
+You don't have to memorize them — the editor suggests them.
+
+----------------------------------------------------------------
+SMART AUTOCOMPLETE
+----------------------------------------------------------------
+The editor understands what you're typing and suggests.
+
+Start typing "fil" — the editor suggests filterif.
+Type "впр" (Russian alias for VLOOKUP) — the editor suggests vlookup.
+Type "суммапо" — the editor suggests sumif.
+
+Autocomplete works:
+• by partial function name (fil → filterif);
+• by Russian aliases (впр → vlookup, сводная → pivot);
+• by the first letter;
+• with arrow-key navigation ↑ ↓;
+• with insertion via Tab or Enter.
+
+The candidate list appears right under the cursor — just like
+in modern IDEs. Nothing has to be memorized.
+
+----------------------------------------------------------------
+LIVE HELP WITH EXAMPLES
+----------------------------------------------------------------
+On the right side of the editor — a live help panel.
+Click a function name in your code and you'll see:
+
+• SYNTAX — the exact call format.
+• DESCRIPTION — what the function does.
+• EXAMPLE — how to call it.
+• MATRIX EXAMPLE — concrete input, code and output.
+
+Help updates instantly on click. No switching windows,
+no Googling. Everything — right next to your code.
+
+If a function doesn't exist — the editor suggests similar
+ones and hints at what you might have meant.
+
+----------------------------------------------------------------
+POWERFUL ERROR HANDLING WITH HINTS
+----------------------------------------------------------------
+Errors in ArrayVator are not dry messages — they are full
+explanations. Every error includes:
+
+• What's wrong (in plain language).
+• Where exactly (line and column, with a ^ pointer).
+• How to fix it (a concrete example of correct code).
+• Why it's this way (an explanation of the language's logic).
+
+Example error message:
+
+    ❌ Error (line 3):
+      if x = 5 then
+
+    In the condition '=' (assignment) is used,
+    but '==' (comparison) is required.
+
+    Incorrect: if x = 5 then
+    Correct:   if x == 5 then
+
+    💡 '='  — assigns a value.
+       '==' — compares values.
+
+Plus — automatic hints:
+• "Did you mean filterif?"
+• "Missing closing parenthesis ')' — add it at the end."
+• "The keyword 'then' is required after the if condition."
+
+Errors are available in two languages — Russian and English —
+switchable with a single setting.
+
+----------------------------------------------------------------
+BUILD .EXE IN TWO CLICKS
+----------------------------------------------------------------
+The signature feature of ArrayVator: you can turn your script
+into a standalone .exe program and hand it to a colleague —
+no Python install, no library install, no configuration.
+
+How it works:
+
+1. Write code in the ArrayVator editor.
+2. Click "Export to EXE".
+3. Set the program name — for example, MyReport.exe.
+4. Get a folder with the .exe and all libraries.
+
+Your colleague double-clicks the .exe — and it just works.
+No installs. No dependencies. Just a file.
+
+The compiler picks the right runner automatically:
+
+• If the code only has tables and math — a compact MINIMAL
+  runner is built.
+• If Excel or DuckDB is used — a DATA runner is built.
+• If charts or reports are used — a FULL runner is built.
+
+You don't have to think about this — the compiler chooses.
+
+----------------------------------------------------------------
+WHAT THE EDITOR DOES
+----------------------------------------------------------------
+ArrayVator Editor is a full development environment:
+
+• Syntax highlighting (keywords, functions, variables,
+  strings, numbers, comments — each in its own color).
+• Line numbers.
+• Find and replace (case-sensitive and case-insensitive).
+• Built-in output console.
+• Working folder — next to the editor.
+• Auto-save of settings.
+• Dark and light themes.
+• Russian and English interface.
+• Configurable fonts and highlight palette.
+• Help panel that updates on click.
+• Autocomplete with aliases.
+• Error handling with human-readable hints.
+
+All of this — in a single window. No external dependencies.
+
+----------------------------------------------------------------
+WHO THIS LANGUAGE IS FOR
+----------------------------------------------------------------
+• Analyst — quickly count, group, plot.
+• Economist — build summaries by department and quarter.
+• Marketer — run ABC analysis and find anomalies.
+• Accountant — process exports from Excel or accounting systems.
+• Researcher — clean data and compute statistics.
+• Student — learn tabular work without Python.
+• Manager — produce a report and pass it to colleagues.
+
+ArrayVator is a language for people who work with data
+but don't want to spend months learning Python and pandas.
+
+----------------------------------------------------------------
+WHAT THE LANGUAGE DOESN'T HAVE (AND NEVER WILL)
+----------------------------------------------------------------
+• Classes, inheritance, OOP.
+• Lambdas and functional programming.
+• Imports and package installs.
+• Dependencies on external libraries (except BigData mode).
+• Complex syntax for the sake of syntax.
+
+The language is deliberately simple. Everything an analyst
+doesn't need — has been removed.
+
+----------------------------------------------------------------
+SUMMARY
+----------------------------------------------------------------
+ArrayVator is:
+
+✔ One readable language instead of ten libraries.
+✔ 300+ built-in functions for data analysis.
+✔ Smart autocomplete, including Russian aliases.
+✔ Live help with examples right in the editor.
+✔ Clear errors with hints and code examples.
+✔ Build .exe in two clicks.
+✔ Work with a billion rows via DuckDB.
+✔ Charts and HTML reports out of the box.
+✔ No dependencies when passing code to colleagues.
+
+Simple. Readable. Fast. Yours.
+
+================================================================================================================================
+ARRAYVATOR — A DATA PROCESSING LANGUAGE
+================================================================
+
+WHAT IT IS
+----------------------------------------------------------------
+ArrayVator is a programming language for processing tabular
+data. It was built for analysts, economists, marketers,
+accountants, researchers, and everyone who works with tables:
+Excel, CSV, Parquet, SQLite databases.
+
+Instead of complex code and dozens of libraries — a single,
+readable language where every operation reads like an
+ordinary sentence:
+
+    m = filterif(m[:, "Department"] == "IT")
+    m = sort(m[:, "Salary"], ZA)
+    m = addcolumn(m, "Tax", m[:, "Salary"] * 0.13)
+
+This is not Python. Not R. Not SQL. This is a separate language
+purpose-built so that a person without a programming background
+can learn it in a single evening.
+
+----------------------------------------------------------------
+WHY IT EXISTS
+----------------------------------------------------------------
+• Process tables without Excel and without VBA.
+• Do data analysis without Python and without pandas.
+• Build pivot tables without Excel's pivot tables.
+• Build charts without matplotlib.
+• Produce reports without Word and without layout tools.
+• Compile a finished program into a .exe and hand it to a
+  colleague with no installation required.
+
+One file with code — and the entire analysis logic is in your
+hands. No dependencies, no version conflicts.
+
+----------------------------------------------------------------
+WHAT IS BUILT INTO THE LANGUAGE
+----------------------------------------------------------------
+More than 300 functions. Everything an analyst needs —
+out of the box:
+
+• Filtering, sorting, removing duplicates.
+• Grouping, aggregation, pivot / unpivot tables.
+• Conditional aggregates: sumif, countif, avgif, minif, maxif.
+• Window functions: rownumber, rank, lag, lead, winsum.
+• ABC analysis, Pareto analysis, anomaly detection
+  (iqr, zscore, percentile).
+• Dates: year, month, day, adddays, datetrunc, calendar.
+• Text: trim, clean, split, replacetext, deletetext.
+• None handling: isnone, fillna, dropna, coalesce, noneif.
+• SQL-like operations: join, groupby, having.
+• Files: Excel, CSV, TXT, Parquet, SQLite.
+• BigData mode on DuckDB: up to a billion rows, ~50 MB RAM.
+• Charts: bar, line, pie, hist, scatter, box, heatmap, pair.
+• HTML reports with interactive Plotly charts.
+• Matrix ↔ DuckDB conversion in a single line.
+
+----------------------------------------------------------------
+THE MAIN IDEA — READABILITY
+----------------------------------------------------------------
+ArrayVator is built on a simple principle: code should be
+understandable by a human, not only by a machine.
+
+    m = deleteif(m[:, "Department"] == "IT")
+
+Reads in plain English: "delete rows where Department equals IT".
+No braces, no indices, no commas — just a phrase.
+
+Function names are short, meaningful, in English:
+filterif, sort, groupby, sumif, vlookup, transpose.
+You don't have to memorize them — the editor suggests them.
+
+----------------------------------------------------------------
+SMART AUTOCOMPLETE
+----------------------------------------------------------------
+The editor understands what you're typing and suggests.
+
+Start typing "fil" — the editor suggests filterif.
+Type "впр" (Russian alias for VLOOKUP) — the editor suggests vlookup.
+Type "суммапо" — the editor suggests sumif.
+
+Autocomplete works:
+• by partial function name (fil → filterif);
+• by Russian aliases (впр → vlookup, сводная → pivot);
+• by the first letter;
+• with arrow-key navigation ↑ ↓;
+• with insertion via Tab or Enter.
+
+The candidate list appears right under the cursor — just like
+in modern IDEs. Nothing has to be memorized.
+
+----------------------------------------------------------------
+LIVE HELP WITH EXAMPLES
+----------------------------------------------------------------
+On the right side of the editor — a live help panel.
+Click a function name in your code and you'll see:
+
+• SYNTAX — the exact call format.
+• DESCRIPTION — what the function does.
+• EXAMPLE — how to call it.
+• MATRIX EXAMPLE — concrete input, code and output.
+
+Help updates instantly on click. No switching windows,
+no Googling. Everything — right next to your code.
+
+If a function doesn't exist — the editor suggests similar
+ones and hints at what you might have meant.
+
+----------------------------------------------------------------
+POWERFUL ERROR HANDLING WITH HINTS
+----------------------------------------------------------------
+Errors in ArrayVator are not dry messages — they are full
+explanations. Every error includes:
+
+• What's wrong (in plain language).
+• Where exactly (line and column, with a ^ pointer).
+• How to fix it (a concrete example of correct code).
+• Why it's this way (an explanation of the language's logic).
+
+Example error message:
+
+    ❌ Error (line 3):
+      if x = 5 then
+
+    In the condition '=' (assignment) is used,
+    but '==' (comparison) is required.
+
+    Incorrect: if x = 5 then
+    Correct:   if x == 5 then
+
+    💡 '='  — assigns a value.
+       '==' — compares values.
+
+Plus — automatic hints:
+• "Did you mean filterif?"
+• "Missing closing parenthesis ')' — add it at the end."
+• "The keyword 'then' is required after the if condition."
+
+Errors are available in two languages — Russian and English —
+switchable with a single setting.
+
+----------------------------------------------------------------
+BUILD .EXE IN TWO CLICKS
+----------------------------------------------------------------
+The signature feature of ArrayVator: you can turn your script
+into a standalone .exe program and hand it to a colleague —
+no Python install, no library install, no configuration.
+
+How it works:
+
+1. Write code in the ArrayVator editor.
+2. Click "Export to EXE".
+3. Set the program name — for example, MyReport.exe.
+4. Get a folder with the .exe and all libraries.
+
+Your colleague double-clicks the .exe — and it just works.
+No installs. No dependencies. Just a file.
+
+The compiler picks the right runner automatically:
+
+• If the code only has tables and math — a compact MINIMAL
+  runner is built.
+• If Excel or DuckDB is used — a DATA runner is built.
+• If charts or reports are used — a FULL runner is built.
+
+You don't have to think about this — the compiler chooses.
+
+----------------------------------------------------------------
+WHAT THE EDITOR DOES
+----------------------------------------------------------------
+ArrayVator Editor is a full development environment:
+
+• Syntax highlighting (keywords, functions, variables,
+  strings, numbers, comments — each in its own color).
+• Line numbers.
+• Find and replace (case-sensitive and case-insensitive).
+• Built-in output console.
+• Working folder — next to the editor.
+• Auto-save of settings.
+• Dark and light themes.
+• Russian and English interface.
+• Configurable fonts and highlight palette.
+• Help panel that updates on click.
+• Autocomplete with aliases.
+• Error handling with human-readable hints.
+
+All of this — in a single window. No external dependencies.
+
+----------------------------------------------------------------
+WHO THIS LANGUAGE IS FOR
+----------------------------------------------------------------
+• Analyst — quickly count, group, plot.
+• Economist — build summaries by department and quarter.
+• Marketer — run ABC analysis and find anomalies.
+• Accountant — process exports from Excel or accounting systems.
+• Researcher — clean data and compute statistics.
+• Student — learn tabular work without Python.
+• Manager — produce a report and pass it to colleagues.
+
+ArrayVator is a language for people who work with data
+but don't want to spend months learning Python and pandas.
+
+----------------------------------------------------------------
+WHAT THE LANGUAGE DOESN'T HAVE (AND NEVER WILL)
+----------------------------------------------------------------
+• Classes, inheritance, OOP.
+• Lambdas and functional programming.
+• Imports and package installs.
+• Dependencies on external libraries (except BigData mode).
+• Complex syntax for the sake of syntax.
+
+The language is deliberately simple. Everything an analyst
+doesn't need — has been removed.
+
+----------------------------------------------------------------
+SUMMARY
+----------------------------------------------------------------
+ArrayVator is:
+
+✔ One readable language instead of ten libraries.
+✔ 300+ built-in functions for data analysis.
+✔ Smart autocomplete, including Russian aliases.
+✔ Live help with examples right in the editor.
+✔ Clear errors with hints and code examples.
+✔ Build .exe in two clicks.
+✔ Work with a billion rows via DuckDB.
+✔ Charts and HTML reports out of the box.
+✔ No dependencies when passing code to colleagues.
+
+Simple. Readable. Fast. Yours.
+
+================================================================
+
+# ============================================================
+# COMPLETE REFERENCE FOR THE ARRAYVATOR LANGUAGE
+# ============================================================
+# For beginners. Everything as detailed and clear as possible.
+# Each function: purpose, syntax, example, output.
+#
+# IMPORTANT TERMS USED IN THIS REFERENCE:
+#
+#   Scalar — a single value. One number, one text string,
+#            one true/false, one None.
+#            For example: 5, "Anna", true, None — all of these are scalars.
+#
+#   Vector — one row of values or one column of values.
+#            Always one-dimensional (1D). Inside — only data,
+#            without a header.
+#            For example: [10, 20, 30] — a vector of 3 numbers.
+#
+#   Matrix — a table with a header and data (2D).
+#            The first row — column headers.
+#            The rest of the rows — data.
+#            For example:
+#            ["Name", "Age";
+#             "Anna", 25;
+#             "Bob", 30]
+#
+#   Slice — a part of a matrix (a column or a row).
+#          For example: m[:, "Salary"] — the entire "Salary" column.
+#          A vector is also a slice, but without a header.
+#
+#   by — a parameter that tells the function "count by groups".
+#        Without by the function computes one number for the whole table.
+#        With by — computes separately for each group (for example,
+#        for each department or each class).
+# ============================================================
+
+
+# ============================================================
+# 1. BASICS
+# ============================================================
+
+# ------------------------------------------------------------
+# 1.1 What is None (empty value)
+# ------------------------------------------------------------
+# None is an empty value. Like an empty cell in Excel.
+# It is always written the same way: None, none, NONE — these are the same.
+# You cannot write: null, NULL, nan — those words do not exist in the language.
+#
+# Syntax: None
+#
+# Example:
+x = None
+print(x)
+# Output: None
+#
+# Checking for emptiness:
+r = isnone(None)
+print(r)
+# Output: True
+
+
+# ------------------------------------------------------------
+# 1.2 Boolean values (true / false)
+# ------------------------------------------------------------
+# true — true, false — false. Used in conditions.
+#
+# Syntax: true | false
+#
+# Example:
+a = true
+b = false
+print(a, b)
+# Output: True False
+
+
+# ------------------------------------------------------------
+# 1.3 Operators
+# ------------------------------------------------------------
+# Arithmetic:
+#   +   addition
+#   -   subtraction
+#   *   multiplication
+#   /   division (result is a floating-point number)
+#   %   modulo (remainder)
+#   ^   power
+#   //  integer division
+#
+# Comparison:
+#   ==  equal
+#   !=  not equal
+#   <   less than
+#   >   greater than
+#   <=  less than or equal
+#   >=  greater than or equal
+#
+# Logic (written as WORDS, not symbols):
+#   and  — AND
+#   or   — OR
+#   not  — NOT
+#
+# You CANNOT write: && || !  — those symbols do not exist in the language.
+#
+# Example:
+x = 5 + 3
+y = 10 / 4
+z = 2 ^ 10
+ok = (x > 5) and (y < 3)
+print(x, y, z, ok)
+# Output: 8 2.5 1024 True
+
+
+# ============================================================
+# 2. CONTROL STRUCTURES
+# ============================================================
+
+# ------------------------------------------------------------
+# 2.1 if-then-else
+# ------------------------------------------------------------
+# If the condition is true — the block after then is executed.
+# If not — the block after else (if present).
+#
+# Syntax:
+#   if condition then { statements }
+#   if condition then { statements } else { statements }
+#
+# Example:
+x = 10
+if x > 5 then { print("greater") } else { print("less") }
+# Output: greater
+#
+# Example without else:
+x = 3
+if x > 5 then { print("greater") }
+# Outputs nothing.
+
+
+# ------------------------------------------------------------
+# 2.2 for loop (repeat N times)
+# ------------------------------------------------------------
+# Executes the block for each number in the range.
+# Both ends are inclusive: 1 to 5 — this is 1, 2, 3, 4, 5.
+#
+# Syntax:
+#   for i = start to end do { statements }
+#   for i = start to end step S do { statements }
+#
+# Example:
+for i = 1 to 5 do { print(i) }
+# Output:
+# 1
+# 2
+# 3
+# 4
+# 5
+#
+# Reverse order:
+for i = 5 to 1 do { print(i) }
+# Output: 5 4 3 2 1 (each on a new line)
+#
+# With step 2:
+for i = 1 to 10 step 2 do { print(i) }
+# Output: 1 3 5 7 9
+#
+# With step -2:
+for i = 10 to 1 step -2 do { print(i) }
+# Output: 10 8 6 4 2
+#
+# IMPORTANT: you cannot write "for i = 2 to end".
+# Inside a loop you cannot use end — it is unclear what "end" refers to.
+# You must use length functions:
+#   lenrow(m) — number of rows in matrix m
+#   lencol(m) — number of columns
+#   len(v)    — number of elements in vector v
+#
+# Example — iterating over employees:
+m = ["Name", "Salary";
+     "Anna", 50000;
+     "Bob", 60000;
+     "Eve", 55000]
+print(m)
+# Output:
+# Name    Salary
+# Anna    50000
+# Bob     60000
+# Eve     55000
+#
+for i = 2 to lenrow(m) do { print(m[i, 1], m[i, 2]) }
+# Output:
+# Anna 50000
+# Bob 60000
+# Eve 55000
+
+
+# ------------------------------------------------------------
+# 2.3 while loop (while condition is true)
+# ------------------------------------------------------------
+# Repeats the block while the condition is true.
+#
+# Syntax: while condition { statements }
+#
+# Example:
+i = 1
+while i <= 3 { print(i); i = i + 1 }
+# Output: 1 2 3
+
+
+# ------------------------------------------------------------
+# 2.4 break (exit loop)
+# ------------------------------------------------------------
+# Terminates the loop early.
+#
+# Syntax: break
+#
+# Example:
+for i = 1 to 100 do { if i > 3 then { break }; print(i) }
+# Output: 1 2 3
+
+
+# ------------------------------------------------------------
+# 2.5 try/catch (error handling)
+# ------------------------------------------------------------
+# If an error occurs in the try block, control passes
+# to the catch block. There you can inspect the error text.
+#
+# Syntax:
+#   try { statements } catch { statements }
+#   try { statements } catch (e) { statements }
+#
+# Example:
+try { m = OpenCSV("no_such.csv") } catch { print("Error:", error) }
+# Output: Error: File not found: no_such.csv
+#
+# Example with a variable:
+try { m = OpenCSV("no_such.csv") } catch (e) { print("Caught:", e) }
+# Output: Caught: File not found: no_such.csv
+
+
+# ============================================================
+# 3. CREATING DATA
+# ============================================================
+
+# ------------------------------------------------------------
+# 3.1 matrix(R, C) — create a matrix
+# ------------------------------------------------------------
+# Creates a matrix of R rows by C columns.
+# All cells are filled with None.
+#
+# Syntax: matrix(R, C)
+#
+# Example:
+m = matrix(2, 3)
+print(m)
+# Output:
+# None  None  None
+# None  None  None
+
+
+# ------------------------------------------------------------
+# 3.2 vector(N) — create a vector
+# ------------------------------------------------------------
+# A vector is a single row of values.
+# Creates a vector of N None elements.
+#
+# Syntax: vector(N)
+#
+# Example:
+v = vector(4)
+print(v)
+# Output: [None, None, None, None]
+
+
+# ------------------------------------------------------------
+# 3.3 zeros / ones — zeros or ones
+# ------------------------------------------------------------
+# Syntax:
+#   zeros(R, C)   — R×C matrix of zeros
+#   zeros(N)      — vector of N zeros
+#   ones(R, C)    — R×C matrix of ones
+#   ones(N)       — vector of N ones
+#
+# Example:
+m = zeros(2, 3)
+print(m)
+# Output:
+# 0  0  0
+# 0  0  0
+#
+v = ones(4)
+print(v)
+# Output: [1, 1, 1, 1]
+
+
+# ------------------------------------------------------------
+# 3.4 fill — fill with a value
+# ------------------------------------------------------------
+# Fills ALL cells with the given value.
+#
+# Syntax: fill(matrix, value)
+#
+# Example:
+m = matrix(2, 2)
+print(m)
+# Output:
+# None  None
+# None  None
+#
+m = fill(m, 7)
+print(m)
+# Output:
+# 7  7
+# 7  7
+
+
+# ------------------------------------------------------------
+# 3.5 range / Number — sequence of numbers
+# ------------------------------------------------------------
+# Creates a sequence of numbers.
+#
+# Syntax:
+#   range(N)                   — [1, 2, ..., N]
+#   range(a:b)                 — [a, a+1, ..., b]
+#   range(a:b, step S)         — with step S
+#
+# IMPORTANT: range works only in an assignment.
+#
+# Example:
+m = matrix(5, 1)
+print(m)
+# Output:
+# None
+# None
+# None
+# None
+# None
+#
+m[:, 1] = range(5)
+print(m)
+# Output:
+# 1
+# 2
+# 3
+# 4
+# 5
+#
+m = matrix(5, 1)
+print(m)
+# Output:
+# None
+# None
+# None
+# None
+# None
+#
+m[:, 1] = range(1:10, step 2)
+print(m)
+# Output:
+# 1
+# 3
+# 5
+# 7
+# 9
+
+
+# ------------------------------------------------------------
+# 3.6 random — random numbers
+# ------------------------------------------------------------
+# Generates random numbers.
+# Works ONLY in an assignment (not in print!).
+#
+# Syntax: random(start:end, precision)
+#   start:end  — range (both ends inclusive)
+#   precision  — 0 for integers, N for float with N decimal places
+#
+# Example:
+x = random(0:10, 0)
+print(x)
+# Output: for example 7 (different each time)
+#
+m = matrix(2, 2)
+print(m)
+# Output:
+# None  None
+# None  None
+#
+m[all, all] = random(0:10, 0)
+print(m)
+# Output: for example
+# 3  8
+# 1  9
+# ============================================================
+# 4. INDEXING AND ASSIGNMENT
+# ============================================================
+
+# ------------------------------------------------------------
+# 4.1 Index forms
+# ------------------------------------------------------------
+# An index is a way to access a cell, a row, or a column.
+#
+# Forms:
+#   m[N, M]            — cell (row N, column M)
+#   m[N, :]            — the whole row N
+#   m[:, M]            — the whole column M
+#   m[:, "Name"]       — the whole column by name
+#   m[N:M, K:L]        — range (rows N..M, columns K..L)
+#   m[last K, :]       — last K rows
+#   m[:, last K]       — last K columns
+#   m[end, :]          — last row
+#   m[:, end]          — last column
+#   m[:, end+1]        — a new column to the RIGHT of the last one
+#
+# Example:
+m = ["Name", "Age", "Department";
+     "Anna", 25, "IT";
+     "Bob", 30, "HR";
+     "Eve", 28, "IT"]
+print(m)
+# Output:
+# Name    Age  Department
+# Anna    25   IT
+# Bob     30   HR
+# Eve     28   IT
+#
+print(m[1, 1])
+# Output: Anna
+#
+print(m[1, :])
+# Output: ["Anna", 25, "IT"]
+#
+print(m[:, "Department"])
+# Output: ["IT", "HR", "IT"]
+#
+print(m[1:2, 1:2])
+# Output:
+# Anna  25
+# Bob   30
+#
+print(m[end, :])
+# Output: ["Eve", 28, "IT"]
+#
+print(m[:, end])
+# Output: ["IT", "HR", "IT"]
+#
+print(m[last 2, :])
+# Output:
+# Bob    30  HR
+# Eve    28  IT
+
+
+# ------------------------------------------------------------
+# 4.2 Reading headers
+# ------------------------------------------------------------
+# m[0, :] — this is the vector of headers.
+#
+# Example:
+m = ["Name", "Age"; "Anna", 25]
+print(m)
+# Output:
+# Name  Age
+# Anna  25
+#
+h = m[0, :]
+print(h)
+# Output: ["Name", "Age"]
+
+
+# ------------------------------------------------------------
+# 4.3 Assigning a single cell
+# ------------------------------------------------------------
+# Syntax: m[row, column] = value
+#
+# Example:
+m = ["Name", "Salary";
+     "Anna", 50000;
+     "Bob", 60000]
+print(m)
+# Output:
+# Name  Salary
+# Anna  50000
+# Bob   60000
+#
+m[1, 2] = 55000
+print(m)
+# Output:
+# Name  Salary
+# Anna  55000
+# Bob   60000
+
+
+# ------------------------------------------------------------
+# 4.4 Assigning a header
+# ------------------------------------------------------------
+# The header is the 0-th row.
+# Syntax: m[0, :] = [...]
+#
+# Example:
+m = matrix(3, 2)
+print(m)
+# Output:
+# None  None
+# None  None
+# None  None
+#
+m[0, :] = ["Name", "Salary"]
+m[1, :] = ["Anna", 50000]
+m[2, :] = ["Bob", 60000]
+print(m)
+# Output:
+# Name  Salary
+# Anna  50000
+# Bob   60000
+
+
+# ------------------------------------------------------------
+# 4.5 Assigning a whole column
+# ------------------------------------------------------------
+# Syntax: m[:, "Name"] = vector | scalar
+#
+# Example by name:
+m = ["Name", "Salary";
+     "Anna", 50000;
+     "Bob", 60000]
+print(m)
+# Output:
+# Name  Salary
+# Anna  50000
+# Bob   60000
+#
+m[:, "Salary"] = [70000, 80000]
+print(m)
+# Output:
+# Name  Salary
+# Anna  70000
+# Bob   80000
+#
+# Scalar — into all cells of the column:
+m[:, "Salary"] = 0
+print(m)
+# Output:
+# Name  Salary
+# Anna  0
+# Bob   0
+
+
+# ------------------------------------------------------------
+# 4.6 Assigning a whole row
+# ------------------------------------------------------------
+# Syntax: m[N, :] = [...]
+#
+# Example:
+m = ["Name", "Salary", "Department";
+     "Anna", 50000, "IT";
+     "Bob", 60000, "HR"]
+print(m)
+# Output:
+# Name  Salary  Department
+# Anna  50000   IT
+# Bob   60000   HR
+#
+m[1, :] = ["Anna", 55000, "IT"]
+print(m)
+# Output:
+# Name  Salary  Department
+# Anna  55000   IT
+# Bob   60000   HR
+
+
+# ------------------------------------------------------------
+# 4.7 Math over a whole column
+# ------------------------------------------------------------
+# Example — multiply salary by 2:
+m = ["Name", "Salary";
+     "Anna", 50000;
+     "Bob", 60000]
+print(m)
+# Output:
+# Name  Salary
+# Anna  50000
+# Bob   60000
+#
+m[:, "Salary"] = m[:, "Salary"] * 2
+print(m)
+# Output:
+# Name  Salary
+# Anna  100000
+# Bob   120000
+#
+# Example — rounding:
+m = ["Price"; 10.1234; 20.5678]
+print(m)
+# Output:
+# Price
+# 10.1234
+# 20.5678
+#
+m[:, "Price"] = round(m[:, "Price"], 2)
+print(m)
+# Output:
+# Price
+# 10.12
+# 20.57
+
+
+# ------------------------------------------------------------
+# 4.8 Extending a matrix via end+1, end+2
+# ------------------------------------------------------------
+# When you write to end+N — the matrix is extended.
+# Missing cells are filled with None.
+#
+# Example — a new column:
+m = ["Name"; "Anna"; "Bob"]
+print(m)
+# Output:
+# Name
+# Anna
+# Bob
+#
+m[:, end+1] = ["Salary", 50000, 60000]
+print(m)
+# Output:
+# Name  Salary
+# Anna  50000
+# Bob   60000
+#
+# Example — a new column with a gap:
+m = ["Name"; "Anna"; "Bob"]
+m[:, end+2] = ["Department", "IT", "HR"]
+print(m)
+# Output:
+# Name  None  Department
+# Anna  None  IT
+# Bob   None  HR
+#
+# Example — a new row at the bottom:
+m = ["Name", "Salary";
+     "Anna", 50000]
+print(m)
+# Output:
+# Name  Salary
+# Anna  50000
+#
+m[end+1, :] = ["Bob", 60000]
+print(m)
+# Output:
+# Name  Salary
+# Anna  50000
+# Bob   60000
+
+
+# ============================================================
+# 5. STATISTICAL FUNCTIONS
+# ============================================================
+
+# ------------------------------------------------------------
+# 5.0 WHAT IS by (important to understand before the functions)
+# ------------------------------------------------------------
+# Take a table of employees:
+m = ["Department", "Salary";
+     "IT", 100;
+     "HR", 200;
+     "IT", 300]
+print(m)
+# Output:
+# Department  Salary
+# IT          100
+# HR          200
+# IT          300
+#
+# WITHOUT by — the function computes ONE number for the WHOLE table.
+#   sum(m[:, "Salary"]) = 600
+#
+# WITH by — the function computes SEPARATELY for each group.
+#   sum(m[:, "Salary"], by m[:, "Department"]) = [400, 200, 400]
+#
+#   What happened:
+#     IT group: 100 + 300 = 400
+#     HR group: 200 = 200
+#   The result is a vector of 3 numbers, one for each
+#   row of the table. For the row "IT" — the sum of its entire group.
+#
+# This is similar to pivot, but there is a difference:
+#   pivot  — creates a NEW table (a pivot table), where groups are
+#            rows or columns, and there is less data.
+#   by     — leaves the table as is, but instead of one number
+#            substitutes the number for the group for EACH row.
+#            Often used in addcolumn.
+
+
+# ------------------------------------------------------------
+# 5.1 sum — sum
+# ------------------------------------------------------------
+# Syntax:
+#   sum(slice)                    — single number
+#   sum(slice, by m[:, "X"])      — vector by groups
+#
+# Example without by:
+m = ["Department", "Salary";
+     "IT", 100; "HR", 200; "IT", 300]
+print(m)
+# Output:
+# Department  Salary
+# IT          100
+# HR          200
+# IT          300
+#
+s = sum(m[:, "Salary"])
+print(s)
+# Output: 600
+#
+# Example with by — by groups:
+r = sum(m[:, "Salary"], by m[:, "Department"])
+print(r)
+# Output: [400, 200, 400]
+#
+# Example — add the group sum into a column:
+m = addcolumn(m, "Dept_Total", sum(m[:, "Salary"], by m[:, "Department"]))
+print(m)
+# Output:
+# Department  Salary  Dept_Total
+# IT          100     400
+# HR          200     200
+# IT          300     400
+
+
+# ------------------------------------------------------------
+# 5.2 min / max / avg — minimum / maximum / average
+# ------------------------------------------------------------
+# Syntax:
+#   min(slice) | max(slice) | avg(slice)
+#   min(slice, by m[:, "X"]) — vector by groups
+#
+# Example:
+m = ["Department", "Salary";
+     "IT", 100; "HR", 200; "IT", 300]
+print(m)
+# Output:
+# Department  Salary
+# IT          100
+# HR          200
+# IT          300
+#
+print(min(m[:, "Salary"]))
+# Output: 100
+print(max(m[:, "Salary"]))
+# Output: 300
+print(avg(m[:, "Salary"]))
+# Output: 200
+#
+# By groups:
+print(avg(m[:, "Salary"], by m[:, "Department"]))
+# Output: [200, 200, 200]
+
+
+# ------------------------------------------------------------
+# 5.3 count / median / std
+# ------------------------------------------------------------
+# count  — number of values
+# median — median (middle value in sorted order)
+# std    — standard deviation
+#
+# Syntax:
+#   count(slice)              — non-empty values
+#   count(by m[:, "X"])       — rows in a group
+#
+# Example:
+m = ["Student", "Grade";
+     "Anna", 5; "Bob", 4; "Eve", 3; "Greg", 5]
+print(m)
+# Output:
+# Student  Grade
+# Anna     5
+# Bob      4
+# Eve      3
+# Greg     5
+#
+print(count(m[:, "Grade"]))
+# Output: 4
+print(median(m[:, "Grade"]))
+# Output: 4.5
+print(std(m[:, "Grade"]))
+# Output: 0.83
+
+
+# ------------------------------------------------------------
+# 5.4 len / lenrow / lencol — lengths
+# ------------------------------------------------------------
+# len    — length of a string / vector
+# lenrow — number of rows in a matrix
+# lencol — number of columns in a matrix
+#
+# Example:
+m = ["Name", "Salary", "Department";
+     "Anna", 50000, "IT";
+     "Bob", 60000, "HR"]
+print(m)
+# Output:
+# Name  Salary  Department
+# Anna  50000   IT
+# Bob   60000   HR
+#
+print(len("Hello"))
+# Output: 5
+print(lenrow(m))
+# Output: 3  (header + 2 data rows)
+print(lencol(m))
+# Output: 3
+#
+# IMPORTANT: len does NOT work with a 2D matrix.
+
+
+# ============================================================
+# 6. DUPLICATES
+# ============================================================
+
+# ------------------------------------------------------------
+# 6.1 Unique — unique values
+# ------------------------------------------------------------
+# Syntax: Unique(slice)
+#
+# Example:
+m = ["Name", "Department";
+     "Anna", "IT";
+     "Bob", "HR";
+     "Eve", "IT";
+     "Greg", "Sales"]
+print(m)
+# Output:
+# Name    Department
+# Anna    IT
+# Bob     HR
+# Eve     IT
+# Greg    Sales
+#
+r = Unique(m[:, "Department"])
+print(r)
+# Output: ["IT", "HR", "Sales"]
+
+
+# ------------------------------------------------------------
+# 6.2 CountDistinct — how many unique values
+# ------------------------------------------------------------
+# Syntax: CountDistinct(slice)
+#
+# Example:
+m = ["Department"; "IT"; "HR"; "IT"; "Sales"]
+print(m)
+# Output:
+# Department
+# IT
+# HR
+# IT
+# Sales
+#
+print(CountDistinct(m[:, "Department"]))
+# Output: 3
+
+
+# ------------------------------------------------------------
+# 6.3 ValueCounts — frequency table
+# ------------------------------------------------------------
+# Syntax: ValueCounts(slice)
+#
+# Example:
+m = ["Department"; "IT"; "HR"; "IT"; "Sales"; "IT"]
+print(m)
+# Output:
+# Department
+# IT
+# HR
+# IT
+# Sales
+# IT
+#
+r = ValueCounts(m[:, "Department"])
+print(r)
+# Output:
+# Value  Count
+# IT     3
+# HR     1
+# Sales  1
+
+
+# ------------------------------------------------------------
+# 6.4 DeleteDuplicate — remove duplicates
+# ------------------------------------------------------------
+# Syntax: DeleteDuplicate(slice)
+#
+# Example:
+m = ["Department"; "IT"; "HR"; "IT"; "Sales"]
+r = DeleteDuplicate(m[:, "Department"])
+print(r)
+# Output: ["IT", "HR", "Sales"]
+
+# ============================================================
+# 7. FILTERING AND DELETION
+# ============================================================
+
+# ------------------------------------------------------------
+# 7.1 filterif — keep rows by condition
+# ------------------------------------------------------------
+# Syntax:
+#   filterif(condition)
+#   filterif(condition, inside)          — substring search
+#   filterif(condition, ignore)          — case-insensitive
+#   filterif(condition, inside, ignore)  — both
+#
+# Example:
+m = ["Name", "Department";
+     "Anna", "IT";
+     "Bob", "HR";
+     "Eve", "IT"]
+print(m)
+# Output:
+# Name    Department
+# Anna    IT
+# Bob     HR
+# Eve     IT
+#
+r = filterif(m[:, "Department"] == "IT")
+print(r)
+# Output:
+# Name    Department
+# Anna    IT
+# Eve     IT
+
+
+# ------------------------------------------------------------
+# 7.2 deleteif — delete rows by condition
+# ------------------------------------------------------------
+# Syntax: deleteif(condition)
+#
+# Example:
+m = ["Name", "Department";
+     "Anna", "IT";
+     "Bob", "HR";
+     "Eve", "IT"]
+print(m)
+# Output:
+# Name    Department
+# Anna    IT
+# Bob     HR
+# Eve     IT
+#
+r = deleteif(m[:, "Department"] == "IT")
+print(r)
+# Output:
+# Name  Department
+# Bob   HR
+
+
+# ------------------------------------------------------------
+# 7.3 delete — delete a row or column
+# ------------------------------------------------------------
+# Syntax:
+#   delete(m[N, :])         — row N
+#   delete(m[a:b, :])       — rows a..b
+#   delete(m[last K, :])    — last K rows
+#   delete(m[:, N])         — column N
+#   delete(m[:, a:b])       — columns a..b
+#   delete(m[:, last K])    — last K columns
+#   delete(m[:, "Name"])    — column by name
+#
+# Example — a row:
+m = ["Name", "Salary", "Department";
+     "Anna", 50000, "IT";
+     "Bob", 60000, "HR";
+     "Eve", 55000, "IT"]
+print(m)
+# Output:
+# Name    Salary  Department
+# Anna    50000   IT
+# Bob     60000   HR
+# Eve     55000   IT
+#
+r = delete(m[2, :])
+print(r)
+# Output:
+# Name    Salary  Department
+# Bob     60000   HR
+# Eve     55000   IT
+#
+# Example — a column:
+r = delete(m[:, "Department"])
+print(r)
+# Output:
+# Name    Salary
+# Anna    50000
+# Bob     60000
+# Eve     55000
+
+
+# ============================================================
+# 8. SORTING AND SEARCH
+# ============================================================
+
+# ------------------------------------------------------------
+# 8.1 sort — sorting
+# ------------------------------------------------------------
+# Syntax:
+#   sort(m[:, "X"], AZ)        — ascending
+#   sort(m[:, "X"], ZA)        — descending
+#   sort(m[a:b, "X"], AZ)      — only rows a..b
+#   sort(m[last K, "X"], AZ)   — last K
+#   sort(v, AZ)                — vector
+#
+# Example:
+m = ["Name", "Salary";
+     "Eve", 55000;
+     "Anna", 50000;
+     "Bob", 60000]
+print(m)
+# Output:
+# Name    Salary
+# Eve     55000
+# Anna    50000
+# Bob     60000
+#
+r = sort(m[:, "Salary"], AZ)
+print(r)
+# Output:
+# Name    Salary
+# Anna    50000
+# Eve     55000
+# Bob     60000
+#
+r = sort(m[:, "Salary"], ZA)
+print(r)
+# Output:
+# Name    Salary
+# Bob     60000
+# Eve     55000
+# Anna    50000
+
+
+# ------------------------------------------------------------
+# 8.2 find — search
+# ------------------------------------------------------------
+# Syntax:
+#   find(condition)                       — coordinates [[row, column]]
+#   find(condition, inside)               — substring
+#   find(condition, ignore)               — case-insensitive
+#   find(condition, inside, ignore)
+#   find(condition, rows)                 — row numbers
+#   find(condition, cols)                 — column numbers
+#
+# Example:
+m = ["Name", "Department";
+     "Anna", "IT";
+     "Bob", "HR";
+     "Eve", "IT"]
+print(m)
+# Output:
+# Name    Department
+# Anna    IT
+# Bob     HR
+# Eve     IT
+#
+print(find(m[:, "Department"] == "IT"))
+# Output: [[2, 2], [4, 2]]
+#
+print(find(m[:, "Department"] == "IT", rows))
+# Output: [2, 4]
+#
+print(find(m[:, "Department"] == "IT", cols))
+# Output: [2]
+
+
+# ------------------------------------------------------------
+# 8.3 vlookup — VLOOKUP analog
+# ------------------------------------------------------------
+# Searches for a value in ONE table and substitutes it into ANOTHER.
+# Usually two tables:
+#   • Lookup table — where the data is stored (ID → Department).
+#   • Main table — where you need to substitute (list of employees).
+#
+# Mnemonic:
+#   vlookup( where_to_look,  what_to_search,  what_to_return )
+#            └── lookup ──┘  └── query ────┘  └── lookup ────┘
+#
+# Syntax: vlookup(where_to_look, what_to_search, what_to_return)
+#
+# Example — there is a department lookup table and a list of employees.
+# We need to substitute the department name for each employee.
+#
+# Lookup table (table "lookup"):
+lookup = ["Code", "Department";
+          101, "IT";
+          102, "HR";
+          103, "Sales"]
+print(lookup)
+# Output:
+# Code  Department
+# 101   IT
+# 102   HR
+# 103   Sales
+#
+# Main table (table "employees"):
+employees = ["Name", "Dept_Code";
+             "Anna", 101;
+             "Bob", 102;
+             "Eve", 103]
+print(employees)
+# Output:
+# Name    Dept_Code
+# Anna    101
+# Bob     102
+# Eve     103
+#
+# Look at the employees BEFORE:
+print(employees)
+# Output:
+# Name    Dept_Code
+# Anna    101
+# Bob     102
+# Eve     103
+#
+# Substitute the department for each employee in a new column:
+employees = addcolumn(
+    employees,
+    "Department",
+    vlookup(lookup[:, "Code"], employees[:, "Dept_Code"], lookup[:, "Department"])
+)
+print(employees)
+# Output:
+# Name    Dept_Code  Department
+# Anna    101        IT
+# Bob     102        HR
+# Eve     103        Sales
+#
+# How to read this:
+#   1st argument: lookup[:, "Code"]           — where to look (key column)
+#   2nd argument: employees[:, "Dept_Code"]   — what to look for (vector of values)
+#   3rd argument: lookup[:, "Department"]     — what to return from the lookup
+#
+# If you look up a single value instead of a vector:
+r = vlookup(lookup[:, "Code"], 102, lookup[:, "Department"])
+print(r)
+# Output: HR
+
+
+# ============================================================
+# 9. STRING FUNCTIONS
+# ============================================================
+
+# ------------------------------------------------------------
+# 9.1 replacetext — replace text
+# ------------------------------------------------------------
+# Syntax:
+#   replacetext(data, "what", "with")
+#   replacetext(data, "what", "with", ignore)   — case-insensitive
+#
+# Example — scalar:
+print(replacetext("Hello World", "o", "0"))
+# Output: Hell0 W0rld
+#
+# Example — a column in a matrix:
+m = ["Name", "Code";
+     "Anna", "IT-001";
+     "Bob", "HR-002"]
+print(m)
+# Output:
+# Name  Code
+# Anna  IT-001
+# Bob   HR-002
+#
+m = replacetext(m[:, "Code"], "-", "_")
+print(m)
+# Output: ["IT_001", "HR_002"]
+#
+# With ignore:
+m = replacetext(m, "it", "--", ignore)
+
+
+# ------------------------------------------------------------
+# 9.2 deletetextleft / deletetextright
+# ------------------------------------------------------------
+# Remove N characters from the left or from the right.
+#
+# Syntax: deletetextleft(data, N) / deletetextright(data, N)
+#
+# Example:
+print(deletetextleft("PR-001", 3))
+# Output: 001
+print(deletetextright("PR-001", 2))
+# Output: PR-0
+
+
+# ------------------------------------------------------------
+# 9.3 trim / trimleft / trimright
+# ------------------------------------------------------------
+# Remove spaces or specified characters from the edges.
+#
+# Syntax: trim(data [, "chars"])
+#
+# Example:
+print(trim("  hello  "))
+# Output: hello
+print(trimleft("  hello"))
+# Output: hello
+print(trimright("hello  "))
+# Output: hello
+print(trim("+1 (555) 123", "+ ()"))
+# Output: 1555123
+
+
+# ------------------------------------------------------------
+# 9.4 split / joinvector
+# ------------------------------------------------------------
+# split — split a string by a delimiter (the result is a vector).
+# joinvector — join a vector into one string.
+#
+# Syntax:
+#   split(text [, delimiter] [, skip])
+#   joinvector(vector [, delimiter])
+#
+# Example:
+r = split("a,b,c", ",")
+print(r)
+# Output: ["a", "b", "c"]
+r = split("a,,b,,c", ",", skip)
+print(r)
+# Output: ["a", "b", "c"]
+r = joinvector(["a", "b", "c"], "-")
+print(r)
+# Output: a-b-c
+
+
+# ------------------------------------------------------------
+# 9.5 clean — clean text
+# ------------------------------------------------------------
+# Keeps only the specified type of characters.
+# Syntax: clean(data, "digits" | "letters" | "special" | "alnum")
+#
+# Example:
+print(clean("+1 (555) 123-45-67", "digits"))
+# Output: 15551234567
+
+
+# ============================================================
+# 10. WORKING WITH None
+# ============================================================
+
+# ------------------------------------------------------------
+# 10.1 isnone
+# ------------------------------------------------------------
+# Syntax: isnone(value)
+#
+# Example:
+print(isnone(None))
+# Output: True
+print(isnone(5))
+# Output: False
+
+
+# ------------------------------------------------------------
+# 10.2 fillna
+# ------------------------------------------------------------
+# Syntax: fillna(data, value)
+#
+# Example:
+m = ["Name", "Salary";
+     "Anna", 50000;
+     "Bob", None;
+     "Eve", 55000]
+print(m)
+# Output:
+# Name    Salary
+# Anna    50000
+# Bob     None
+# Eve     55000
+#
+m = fillna(m, 0)
+print(m)
+# Output:
+# Name    Salary
+# Anna    50000
+# Bob     0
+# Eve     55000
+
+
+# ------------------------------------------------------------
+# 10.3 dropna
+# ------------------------------------------------------------
+# Syntax: dropna(data)
+#
+# Example:
+m = ["Name", "Salary";
+     "Anna", 50000;
+     "Bob", None;
+     "Eve", 55000]
+print(m)
+# Output:
+# Name    Salary
+# Anna    50000
+# Bob     None
+# Eve     55000
+#
+m = dropna(m)
+print(m)
+# Output:
+# Name    Salary
+# Anna    50000
+# Eve     55000
+
+
+# ------------------------------------------------------------
+# 10.4 coalesce
+# ------------------------------------------------------------
+# Syntax: coalesce(value1, value2, ...)
+#
+# Example:
+print(coalesce(None, 5))
+# Output: 5
+print(coalesce(None, None, 10))
+# Output: 10
+
+
+# ------------------------------------------------------------
+# 10.5 noneif
+# ------------------------------------------------------------
+# Syntax: noneif(value, condition)
+#
+# Example:
+print(noneif(5, 5 == 5))
+# Output: None
+print(noneif(5, 5 == 6))
+# Output: 5
+
+
+# ============================================================
+# 11. DATA TYPES
+# ============================================================
+
+# ------------------------------------------------------------
+# 11.1 type
+# ------------------------------------------------------------
+# Syntax: type(value)
+#
+# Example:
+print(type(42))
+# Output: integer
+print(type(3.14))
+# Output: float
+print(type("abc"))
+# Output: string
+print(type(true))
+# Output: boolean
+print(type(None))
+# Output: null
+
+
+# ------------------------------------------------------------
+# 11.2 is_number / is_integer / is_float / is_string / is_boolean
+# ------------------------------------------------------------
+# Syntax: is_number(value)
+#
+# Example:
+print(is_number(42))
+# Output: True
+print(is_number("42"))
+# Output: False
+print(is_string("abc"))
+# Output: True
+
+
+# ------------------------------------------------------------
+# 11.3 to_string / to_number
+# ------------------------------------------------------------
+# Syntax: to_string(value) / to_number(value)
+#
+# Example:
+print(to_string(42))
+# Output: "42"
+print(to_number("3.14"))
+# Output: 3.14
+print(to_number("abc"))
+# Output: None
+
+
+# ============================================================
+# 12. MATH FUNCTIONS
+# ============================================================
+
+# ------------------------------------------------------------
+# 12.1 round — rounding
+# ------------------------------------------------------------
+# Syntax: round(value [, digits])
+#
+# Example:
+print(round(3.14159))
+# Output: 3
+print(round(3.14159, 2))
+# Output: 3.14
+
+
+# ------------------------------------------------------------
+# 12.2 int — integer part
+# ------------------------------------------------------------
+# Syntax: int(value)
+#
+# Example:
+print(int(3.7))
+# Output: 3
+print(int(-3.7))
+# Output: -3
+
+
+# ------------------------------------------------------------
+# 12.3 frac — fractional part
+# ------------------------------------------------------------
+# Syntax: frac(value [, digits])
+#
+# Example:
+print(frac(3.7))
+# Output: 0.7
+print(frac(3.14159, 2))
+# Output: 0.14
+
+
+# ------------------------------------------------------------
+# 12.4 frac_digits — fractional part as an integer
+# ------------------------------------------------------------
+# Syntax: frac_digits(value)
+#
+# Example:
+print(frac_digits(3.456))
+# Output: 456
+print(frac_digits(3.14))
+# Output: 14
+
+# ============================================================
+# 13. MATRIX OPERATIONS
+# ============================================================
+
+# ------------------------------------------------------------
+# 13.1 transpose — transposition
+# ------------------------------------------------------------
+# Syntax: transpose(matrix)
+#
+# Example:
+m = ["Name", "Salary", "Department";
+     "Anna", 50000, "IT";
+     "Bob", 60000, "HR"]
+print(m)
+# Output:
+# Name  Salary  Department
+# Anna  50000   IT
+# Bob   60000   HR
+#
+r = transpose(m)
+print(r)
+# Output:
+# Name       Anna    Bob
+# Salary     50000   60000
+# Department  IT      HR
+
+
+# ------------------------------------------------------------
+# 13.2 addcolumn — add a column
+# ------------------------------------------------------------
+# Syntax: addcolumn(table, "Name", expression)
+#
+# Example:
+m = ["Name", "Salary";
+     "Anna", 50000;
+     "Bob", 60000]
+print(m)
+# Output:
+# Name  Salary
+# Anna  50000
+# Bob   60000
+#
+m2 = addcolumn(m, "Tax", m[:, "Salary"] * 0.13)
+print(m2)
+# Output:
+# Name  Salary  Tax
+# Anna  50000   6500
+# Bob   60000   7800
+
+
+# ------------------------------------------------------------
+# 13.3 addrows — add N rows
+# ------------------------------------------------------------
+# Syntax: addrows(table, N [, fill])
+#
+# Example:
+m = ["Name", "Salary";
+     "Anna", 50000]
+print(m)
+# Output:
+# Name  Salary
+# Anna  50000
+#
+m2 = addrows(m, 2, 0)
+print(m2)
+# Output:
+# Name  Salary
+# Anna  50000
+# 0     0
+# 0     0
+
+
+# ------------------------------------------------------------
+# 13.4 insert — insert an empty row
+# ------------------------------------------------------------
+# Syntax: insert(index, before | after)
+#
+# Example:
+m = ["Name", "Salary";
+     "Anna", 50000;
+     "Bob", 60000]
+print(m)
+# Output:
+# Name  Salary
+# Anna  50000
+# Bob   60000
+#
+r = insert(m[2, :], before)
+print(r)
+# Output:
+# Name  Salary
+# None  None
+# Anna  50000
+# Bob   60000
+
+
+# ------------------------------------------------------------
+# 13.5 insertif — insert a row by condition
+# ------------------------------------------------------------
+# Syntax: insertif(condition, before | after)
+#
+# Example:
+m = ["Name", "Department";
+     "Anna", "IT";
+     "Bob", "HR";
+     "Eve", "IT"]
+print(m)
+# Output:
+# Name    Department
+# Anna    IT
+# Bob     HR
+# Eve     IT
+#
+r = insertif(m[:, "Department"] == "IT", after)
+print(r)
+# Output:
+# Name    Department
+# Anna    IT
+# None    None
+# Bob     HR
+# Eve     IT
+# None    None
+
+
+# ------------------------------------------------------------
+# 13.6 copy — copy a column/row
+# ------------------------------------------------------------
+# Syntax: copy(source, target, before | after)
+#
+# Example:
+m = ["Name", "Salary", "Department";
+     "Anna", 50000, "IT";
+     "Bob", 60000, "HR"]
+print(m)
+# Output:
+# Name  Salary  Department
+# Anna  50000   IT
+# Bob   60000   HR
+#
+r = copy(m[:, "Name"], m[:, "Department"], after)
+print(r)
+# Output:
+# Name  Salary  Department  Name
+# Anna  50000   IT          Anna
+# Bob   60000   HR          Bob
+
+
+# ------------------------------------------------------------
+# 13.7 move — move a column/row
+# ------------------------------------------------------------
+# Syntax: move(source, target, before | after)
+#
+# Example:
+m = ["Name", "Salary", "Department";
+     "Anna", 50000, "IT";
+     "Bob", 60000, "HR"]
+print(m)
+# Output:
+# Name  Salary  Department
+# Anna  50000   IT
+# Bob   60000   HR
+#
+r = move(m[:, "Department"], m[:, "Name"], before)
+print(r)
+# Output:
+# Department  Name  Salary
+# IT          Anna  50000
+# HR          Bob   60000
+
+
+# ------------------------------------------------------------
+# 13.8 joinarray — joining matrices
+# ------------------------------------------------------------
+# Syntax: joinarray(a, b, vertical | horizontal)
+#
+# Example vertical (rows downward):
+a = ["Name"; "Anna"; "Bob"]
+b = ["Name"; "Eve"; "Greg"]
+print(a)
+# Output: ["Name", "Anna", "Bob"]
+print(b)
+# Output: ["Name", "Eve", "Greg"]
+#
+r = joinarray(a, b, vertical)
+print(r)
+# Output: ["Name", "Anna", "Bob", "Name", "Eve", "Greg"]
+
+
+# ------------------------------------------------------------
+# 13.9 matrixmod — modify rows
+# ------------------------------------------------------------
+# Actions: delete, insert, duplicate, clear, keep, swap.
+# Syntax: matrixmod(m, action, N [, before|after])
+#
+# Example — swap two rows:
+m = ["Name"; "Anna"; "Bob"; "Eve"; "Greg"]
+print(m)
+# Output: ["Name", "Anna", "Bob", "Eve", "Greg"]
+#
+r = matrixmod(m, swap, [2, 4])
+print(r)
+# Output: ["Name", "Eve", "Bob", "Anna", "Greg"]
+
+
+# ------------------------------------------------------------
+# 13.10 filldown — fill empty values downward
+# ------------------------------------------------------------
+# Syntax: filldown(m[:, "X"] [, marker])
+#
+# Example:
+m = ["Client"; "Anna"; None; None; "Bob"; None]
+print(m)
+# Output: ["Anna", None, None, "Bob", None]
+#
+r = filldown(m[:, "Client"])
+print(r)
+# Output: ["Anna", "Anna", "Anna", "Bob", "Bob"]
+
+
+# ============================================================
+# 14. GROUPING AND AGGREGATION
+# ============================================================
+
+# ------------------------------------------------------------
+# 14.1 groupby — grouping
+# ------------------------------------------------------------
+# Creates a NEW table — one row per group.
+#
+# Syntax:
+#   groupby(by m[:, "X"], agg sum(m[:, "Y"]))
+#   groupby(by m[:, "X"], agg sum(...), avg(...), count())
+#   groupby(by m[:, "X"], agg sum(...), having sum(...) > 100)
+#
+# Example:
+m = ["Department", "Salary";
+     "IT", 100;
+     "HR", 200;
+     "IT", 300]
+print(m)
+# Output:
+# Department  Salary
+# IT          100
+# HR          200
+# IT          300
+#
+r = groupby(by m[:, "Department"], agg sum(m[:, "Salary"]))
+print(r)
+# Output:
+# Department  Sum_Salary
+# IT          400
+# HR          200
+#
+# Mnemonic: was 3 rows — became 2 groups.
+#
+# With having:
+r = groupby(by m[:, "Department"], agg sum(m[:, "Salary"]),
+            having sum(m[:, "Salary"]) > 300)
+print(r)
+# Output:
+# Department  Sum_Salary
+# IT          400
+
+
+# ------------------------------------------------------------
+# 14.2 groupagg — block aggregation
+# ------------------------------------------------------------
+# Walks the table, finds blocks (identical key values),
+# inserts a total row after each block.
+#
+# Syntax: groupagg(key, value, agg [, name] [, fill|exact])
+#
+# Example:
+m = ["Client", "Amount";
+     "Anna", 100;
+     "Anna", 200;
+     "Bob", 300]
+print(m)
+# Output:
+# Client  Amount
+# Anna    100
+# Anna    200
+# Bob     300
+#
+r = groupagg(m[:, "Client"], m[:, "Amount"], sum, "TOTAL")
+print(r)
+# Output:
+# Client  Amount
+# Anna    100
+# Anna    200
+# TOTAL   300
+# Bob     300
+# TOTAL   300
+#
+# Modes:
+#   fill  — empty values join the current block (default)
+#   exact — each value is a separate block (even empty)
+
+
+# ------------------------------------------------------------
+# 14.3 pivot — pivot table
+# ------------------------------------------------------------
+# Syntax:
+#   pivot(key, values, agg)                        — 3 arguments
+#   pivot(row_key, col_key, values, agg)           — 4 arguments
+#
+# Example with 3 arguments:
+m = ["Department", "Salary";
+     "IT", 100;
+     "HR", 200;
+     "IT", 300]
+print(m)
+# Output:
+# Department  Salary
+# IT          100
+# HR          200
+# IT          300
+#
+r = pivot(m[:, "Department"], m[:, "Salary"], sum)
+print(r)
+# Output:
+# Department  Value
+# IT          400
+# HR          200
+#
+# Example with 4 arguments:
+m = ["Department", "Year", "Salary";
+     "IT", 2024, 100;
+     "IT", 2025, 300;
+     "HR", 2024, 200]
+print(m)
+# Output:
+# Department  Year  Salary
+# IT          2024  100
+# IT          2025  300
+# HR          2024  200
+#
+r = pivot(m[:, "Department"], m[:, "Year"], m[:, "Salary"], sum)
+print(r)
+# Output:
+# Department  2024  2025
+# IT          100   300
+# HR          200   None
+
+
+# ------------------------------------------------------------
+# 14.4 unpivot — from wide to long
+# ------------------------------------------------------------
+# Syntax: unpivot(slice, by slice [, names "Name1", "Name2"])
+#
+# Example:
+m = ["Country", "2023", "2024";
+     "USA", 100, 120;
+     "UK", 200, 220]
+print(m)
+# Output:
+# Country  2023  2024
+# USA      100   120
+# UK       200   220
+#
+r = unpivot(m[:, 2:end], by m[:, "Country"], names "Year", "Population")
+print(r)
+# Output:
+# Country  Year  Population
+# USA      2023  100
+# USA      2024  120
+# UK       2023  200
+# UK       2024  220
+
+
+# ============================================================
+# 15. CONDITIONAL AGGREGATES
+# ============================================================
+
+# ------------------------------------------------------------
+# 15.1 sumif — sum by condition
+# ------------------------------------------------------------
+# Syntax:
+#   sumif(condition, slice)             — single number
+#   sumif(by m[:, "X"], slice)          — vector by groups
+#
+# Example:
+m = ["Department", "Salary";
+     "IT", 100;
+     "HR", 200;
+     "IT", 300]
+print(m)
+# Output:
+# Department  Salary
+# IT          100
+# HR          200
+# IT          300
+#
+print(sumif(m[:, "Department"] == "IT", m[:, "Salary"]))
+# Output: 400
+
+
+# ------------------------------------------------------------
+# 15.2 countif — count by condition
+# ------------------------------------------------------------
+# Syntax: countif(condition) | countif(by m[:, "X"])
+#
+# Example:
+m = ["Department"; "IT"; "HR"; "IT"; "Sales"]
+print(m)
+# Output:
+# Department
+# IT
+# HR
+# IT
+# Sales
+#
+print(countif(m[:, "Department"] == "IT"))
+# Output: 2
+
+
+# ------------------------------------------------------------
+# 15.3 avgif / minif / maxif / medianif
+# ------------------------------------------------------------
+# Syntax: avgif(condition, slice)
+#
+# Example:
+m = ["Department", "Salary";
+     "IT", 100; "HR", 200; "IT", 300]
+print(m)
+# Output:
+# Department  Salary
+# IT          100
+# HR          200
+# IT          300
+#
+print(avgif(m[:, "Department"] == "IT", m[:, "Salary"]))
+# Output: 200
+print(minif(m[:, "Department"] == "IT", m[:, "Salary"]))
+# Output: 100
+print(maxif(m[:, "Department"] == "IT", m[:, "Salary"]))
+# Output: 300
+
+
+# ------------------------------------------------------------
+# 15.4 countuniqueif
+# ------------------------------------------------------------
+# Syntax: countuniqueif(condition, slice)
+#
+# Example:
+m = ["Department", "City";
+     "IT", "London";
+     "IT", "Berlin";
+     "IT", "London";
+     "HR", "Berlin"]
+print(m)
+# Output:
+# Department  City
+# IT          London
+# IT          Berlin
+# IT          London
+# HR          Berlin
+#
+print(countuniqueif(m[:, "Department"] == "IT", m[:, "City"]))
+# Output: 2
+
+
+# ------------------------------------------------------------
+# 15.5 sumproduct — sum of products
+# ------------------------------------------------------------
+# Syntax: sumproduct(slice1, slice2 [, slice3, ...])
+#
+# Example:
+m = ["Product", "Price", "Qty";
+     "A", 10, 2;
+     "B", 20, 3]
+print(m)
+# Output:
+# Product  Price  Qty
+# A        10     2
+# B        20     3
+#
+print(sumproduct(m[:, "Price"], m[:, "Qty"]))
+# Output: 80   (10*2 + 20*3)
+
+
+# ============================================================
+# 16. CONDITIONAL TRANSFORMATION
+# ============================================================
+
+# ------------------------------------------------------------
+# 16.1 case — replace values by condition
+# ------------------------------------------------------------
+# Syntax: case(slice, when ... then ..., else ...)
+#
+# Example:
+m = ["Name", "Age";
+     "Anna", 15;
+     "Bob", 30;
+     "Eve", 17]
+print(m)
+# Output:
+# Name    Age
+# Anna    15
+# Bob     30
+# Eve     17
+#
+r = case(m[:, "Age"], when < 18 then "Child", else "Adult")
+print(r)
+# Output: ["Child", "Adult", "Child"]
+
+
+# ------------------------------------------------------------
+# 16.2 applyif — conditional assignment
+# ------------------------------------------------------------
+# Syntax: applyif(condition, m[:, "X"] = value)
+#
+# Example:
+m = ["Department", "Status";
+     "IT", "";
+     "HR", "";
+     "IT", ""]
+print(m)
+# Output:
+# Department  Status
+# IT     
+# HR     
+# IT     
+#
+m = applyif(m[:, "Department"] == "IT", m[:, "Status"] = "VIP")
+print(m)
+# Output:
+# Department  Status
+# IT          VIP
+# HR     
+# IT          VIP
+
+
+# ============================================================
+# 17. ANALYTICAL FUNCTIONS
+# ============================================================
+
+# ------------------------------------------------------------
+# 17.1 percentof — share of total
+# ------------------------------------------------------------
+# Syntax: percentof(slice [, coef] [, by m[:, "X"]])
+#
+# Example:
+m = ["Product", "Sales";
+     "A", 100;
+     "B", 300]
+print(m)
+# Output:
+# Product  Sales
+# A        100
+# B        300
+#
+r = percentof(m[:, "Sales"])
+print(r)
+# Output: [25.0, 75.0]
+#
+# With coef:
+r = percentof(m[:, "Sales"], coef)
+# Output: [0.25, 0.75]
+
+
+# ------------------------------------------------------------
+# 17.2 abc — ABC analysis
+# ------------------------------------------------------------
+# Syntax: abc(slice [, thresholds] [, %|coef] [, m[:, N]])
+#
+# Example:
+m = ["Product", "Sales";
+     "A", 100;
+     "B", 300;
+     "C", 50]
+print(m)
+# Output:
+# Product  Sales
+# A        100
+# B        300
+# C        50
+#
+r = abc(m[:, "Sales"])
+print(r)
+# Output:
+# Product  Sales  __abc
+# B        300    A
+# A        100    B
+# C        50     C
+
+
+# ------------------------------------------------------------
+# 17.3 anomaly — anomaly detection
+# ------------------------------------------------------------
+# Syntax: anomaly(slice [, method] [, params] [, by ...])
+#
+# Example:
+m = ["Value"; 10; 12; 11; 100; 9]
+print(m)
+# Output:
+# Value
+# 10
+# 12
+# 11
+# 100
+# 9
+#
+r = anomaly(m[:, "Value"], iqr, 1.5)
+print(r)
+# Output:
+# Value  __anomaly
+# 10     0
+# 12     0
+# 11     0
+# 100    1
+# 9      0
+
+# ============================================================
+# 18. WINDOW FUNCTIONS
+# ============================================================
+
+# ------------------------------------------------------------
+# 18.1 rownumber — row number within a group
+# ------------------------------------------------------------
+# Syntax: rownumber(m [, by m[:, "X"]] [, order m[:, "Y"]] [, AZ|ZA])
+#
+# Example:
+m = ["Department", "Salary";
+     "IT", 100;
+     "HR", 200;
+     "IT", 300]
+print(m)
+# Output:
+# Department  Salary
+# IT          100
+# HR          200
+# IT          300
+#
+r = rownumber(m, by m[:, "Department"], order m[:, "Salary"], ZA)
+print(r)
+# Output:
+# Department  Salary  __rownumber
+# IT          300     1
+# HR          200     1
+# IT          100     2
+
+
+# ------------------------------------------------------------
+# 18.2 rank / denserank
+# ------------------------------------------------------------
+# Syntax: rank(m, by m[:, "X"], order m[:, "Y"], AZ|ZA)
+#
+# Example:
+m = ["Salary"; 300; 100; 200; 100]
+print(m)
+# Output:
+# Salary
+# 300
+# 100
+# 200
+# 100
+#
+r = rank(m, order m[:, "Salary"], ZA)
+print(r)
+# Output:
+# Salary  __rank
+# 300     1
+# 100     3
+# 200     2
+# 100     3
+
+
+# ------------------------------------------------------------
+# 18.3 lag / lead
+# ------------------------------------------------------------
+# lag  — value from the PREVIOUS row
+# lead — value from the NEXT row
+#
+# Syntax: lag(m[:, "X"], N [, default])
+#
+# Example:
+m = ["Sales"; 100; 200; 300]
+print(m)
+# Output:
+# Sales
+# 100
+# 200
+# 300
+#
+r = lag(m[:, "Sales"], 1, 0)
+print(r)
+# Output: [0, 100, 200]
+
+
+# ------------------------------------------------------------
+# 18.4 winsum — running total
+# ------------------------------------------------------------
+# Syntax: winsum(m[:, "X"] [, by ...] [, order ...])
+#
+# Example:
+m = ["Sales"; 100; 200; 300]
+print(m)
+# Output:
+# Sales
+# 100
+# 200
+# 300
+#
+r = winsum(m[:, "Sales"])
+print(r)
+# Output: [100, 300, 600]
+
+
+# ------------------------------------------------------------
+# 18.5 qualify — filter by window function
+# ------------------------------------------------------------
+# Syntax: qualify(m, window_function <= value)
+#
+# Example:
+m = ["Department", "Salary";
+     "IT", 100;
+     "HR", 200;
+     "IT", 300]
+print(m)
+# Output:
+# Department  Salary
+# IT          100
+# HR          200
+# IT          300
+#
+r = qualify(m, rownumber(m, by m[:, "Department"], order m[:, "Salary"], ZA) <= 1)
+print(r)
+# Output:
+# Department  Salary
+# IT          300
+# HR          200
+
+
+# ============================================================
+# 19. DATES AND TIME
+# ============================================================
+
+# ------------------------------------------------------------
+# 19.1 date — convert date format
+# ------------------------------------------------------------
+# Syntax: date(data, "input_format", "output_format")
+#
+# Example:
+print(date("20.06.2025", "DD.MM.YYYY", "DD MMMM YYYY"))
+# Output: 20 June 2025
+
+
+# ------------------------------------------------------------
+# 19.2 DateDiff — difference between dates
+# ------------------------------------------------------------
+# Syntax: DateDiff(date1, date2, "format", "unit")
+#
+# Example:
+print(DateDiff("20.06.2024", "25.06.2024", "DD.MM.YYYY", "days"))
+# Output: 5
+
+
+# ------------------------------------------------------------
+# 19.3 datenow / timenow / timestamp
+# ------------------------------------------------------------
+# Syntax: datenow([format])
+#
+# Example:
+print(datenow())
+# Output: 2026-10-03
+print(datenow("DD.MM.YYYY"))
+# Output: 03.10.2026
+print(timenow())
+# Output: 15:09:20
+
+
+# ------------------------------------------------------------
+# 19.4 Extracting components
+# ------------------------------------------------------------
+# Syntax: year(data [, "format"])
+#
+# Example:
+print(year("20.06.2025"))
+# Output: 2025
+print(month("20.06.2025"))
+# Output: 6
+print(day("20.06.2025"))
+# Output: 20
+print(hour("14:30:15"))
+# Output: 14
+
+
+# ------------------------------------------------------------
+# 19.5 adddays / addmonths / addyears / addhours / addminutes / addseconds
+# ------------------------------------------------------------
+# Syntax: adddays(data, N [, "format"])
+#
+# Example:
+print(adddays("20.06.2025", 10))
+# Output: 30.06.2025
+print(addmonths("20.06.2025", 2))
+# Output: 20.08.2025
+print(addhours("14:30:15", 2))
+# Output: 16:30:15
+
+
+# ------------------------------------------------------------
+# 19.6 datetrunc / timetrunc — truncation
+# ------------------------------------------------------------
+# Syntax: datetrunc(data, "unit")
+#
+# Example:
+print(datetrunc("20.06.2025", "month"))
+# Output: 01.06.2025
+print(timetrunc("14:30:15", "hour"))
+# Output: 14:00:00
+
+
+# ------------------------------------------------------------
+# 19.7 calendar / calendarpro
+# ------------------------------------------------------------
+# Syntax: calendar("dd.mm.yyyy", month, year [, "ru"])
+#
+# Example:
+v = calendar("dd.mm.yyyy", 1, 2026, "en")
+print(v[1:3])
+# Output:
+# January 2026
+# 01.01.2026
+# 02.01.2026
+
+
+# ------------------------------------------------------------
+# 19.8 is_valid_time — validate time
+# ------------------------------------------------------------
+# Syntax: is_valid_time(data [, "format"])
+#
+# Example:
+print(is_valid_time("14:30:15"))
+# Output: True
+print(is_valid_time("25:99:99"))
+# Output: False
+
+
+# ============================================================
+# 20. FILES
+# ============================================================
+
+# ------------------------------------------------------------
+# 20.1 OpenExcel / SaveExcel
+# ------------------------------------------------------------
+# Syntax:
+#   OpenExcel("file.xlsx")                — first sheet
+#   OpenExcel("file.xlsx", "Sales")       — sheet by name
+#   OpenExcel("file.xlsx", 1)             — sheet by number
+#   OpenExcel("file.xlsx", all)           — all sheets in a row
+#   SaveExcel(m, "out.xlsx")
+#   SaveExcel(m, "out.xlsx", "Result")
+#
+# Example:
+m = OpenExcel("data.xlsx")
+m = OpenExcel("data.xlsx", "Sales")
+SaveExcel(m, "out.xlsx")
+
+
+# ------------------------------------------------------------
+# 20.2 OpenCSV / SaveCSV
+# ------------------------------------------------------------
+# Modes:
+#   (not specified) — auto by file size (250 MB threshold)
+#   BigData         — force DuckDB (for large files)
+#   Table           — force RAM
+#
+# Example:
+m = OpenCSV("data.csv")
+m = OpenCSV("big.csv", BigData)
+m = OpenCSV("small.csv", Table)
+SaveCSV(m, "out.csv")
+
+
+# ------------------------------------------------------------
+# 20.3 OpenTXT / SaveTXT
+# ------------------------------------------------------------
+# Syntax: OpenTXT("file.txt" [, "delimiter"])
+#
+# Example:
+m = OpenTXT("data.txt")
+m = OpenTXT("data.txt", ";")
+m = OpenTXT("data.txt", "\t")
+SaveTXT(m, "out.txt", "\t")
+
+
+# ------------------------------------------------------------
+# 20.4 OpenParquet / SaveParquet
+# ------------------------------------------------------------
+# Parquet — compressed format, read/written via DuckDB.
+# Syntax: OpenParquet("file.parquet")
+#
+# Example:
+m = OpenParquet("data.parquet")
+SaveParquet(m, "out.parquet")
+
+
+# ------------------------------------------------------------
+# 20.5 SQLite
+# ------------------------------------------------------------
+# Syntax:
+#   OpenSQLite("file.db", "table")
+#   OpenSQLite("file.db", "table", "WHERE")
+#   OpenSQLite("file.db", "table", "WHERE", "ORDER BY")
+#   QuerySQLite("file.db", "SELECT ...")
+#   SaveSQLite(m, "file.db", "table")
+#   SaveSQLite(m, "file.db", "table", overwrite)
+#
+# Example:
+m = OpenSQLite("mydb.db", "users")
+m = OpenSQLite("mydb.db", "users", "age > 25")
+m = QuerySQLite("mydb.db", "SELECT * FROM users")
+SaveSQLite(m, "mydb.db", "users")
+
+
+# ============================================================
+# 21. CONVERTING MATRIX ↔ BIGDATA
+# ============================================================
+
+# ------------------------------------------------------------
+# 21.1 ToMatrix / ToBigData
+# ------------------------------------------------------------
+# ToMatrix  — DuckDB → Matrix (RAM)
+# ToBigData — Matrix → DuckDB
+#
+# Syntax: ToMatrix(bd [, limit]) / ToBigData(m)
+#
+# Example:
+bd = OpenCSV("big.csv", BigData)
+m = ToMatrix(bd)
+m = ToMatrix(bd, 100000)     — first 100k rows
+bd2 = ToBigData(m)
+
+
+# ============================================================
+# 22. INPUT / OUTPUT
+# ============================================================
+
+# ------------------------------------------------------------
+# 22.1 print / println
+# ------------------------------------------------------------
+# print  — horizontally separated by spaces
+# println — vertically, each element on a new line
+#
+# Syntax: print(value1 [, value2, ...])
+#
+# Example:
+print("Hello")
+# Output: Hello
+print("Name:", "Anna", "Age:", 25)
+# Output: Name: Anna Age: 25
+println("A", "B", "C")
+# Output:
+# A
+# B
+# C
+
+
+# ------------------------------------------------------------
+# 22.2 printshow — show a matrix in a window
+# ------------------------------------------------------------
+# Syntax: printshow(data [, "Title"])
+#
+# Example:
+m = ["Name", "Salary";
+     "Anna", 50000;
+     "Bob", 60000]
+printshow(m, "Employees")
+# Output: a window with the table opens
+
+
+# ------------------------------------------------------------
+# 22.3 InputShow — input window for a single value
+# ------------------------------------------------------------
+# Syntax: InputShow([prompt])
+#
+# Example:
+x = InputShow("Enter age:")
+print(x)
+# Output: (the value you entered)
+
+
+# ------------------------------------------------------------
+# 22.4 InputShowForm — form with several fields
+# ------------------------------------------------------------
+# Syntax: InputShowForm("Title", "Field1", "Field2", ...)
+#
+# Example:
+m = InputShowForm("Form", "Name", "Age")
+print(m)
+# Output: matrix [name, age]
+
+
+# ------------------------------------------------------------
+# 22.5 InputListShow — input into several targets
+# ------------------------------------------------------------
+# Syntax:
+#   InputListShow("label1", target1, "label2", target2, ...)
+#   InputListShow(title: "...", "label1", target1, ...)
+#
+# Example:
+name = ""
+age = 0
+InputListShow(title: "Form", "Name", name, "Age", age)
+# Output: a window with two fields opens
+
+
+# ------------------------------------------------------------
+# 22.6 Logging
+# ------------------------------------------------------------
+# Syntax:
+#   LogToFile("file.txt")            — level all
+#   LogToFile("file.txt", "matrix")  — without matrix contents
+#   LogToFile("file.txt", "summary") — summaries only
+#   LogOff()
+#
+# Example:
+LogToFile("log.txt")
+LogToFile("log.txt", "matrix")
+LogOff()
+
+
+# ============================================================
+# 23. CHARTS
+# ============================================================
+
+# ------------------------------------------------------------
+# 23.1 chart
+# ------------------------------------------------------------
+# Syntax:
+#   chart(kind, x [, y] [, options])
+#
+# Kinds:
+#   bar, line, pie, hist, scatter, box, heatmap, pair
+#
+# Options:
+#   title "..."      — title
+#   xlabel "..."     — X label
+#   ylabel "..."     — Y label
+#   color "..."      — color
+#   save "file.png"  — save to file
+#   bins N           — bins (hist only)
+#   plotly           — interactive HTML
+#   static           — static matplotlib (default)
+#
+# Example:
+m = ["Department", "Salary";
+     "IT", 50000;
+     "HR", 60000;
+     "Sales", 55000]
+print(m)
+# Output:
+# Department  Salary
+# IT          50000
+# HR          60000
+# Sales       55000
+#
+chart(bar, m[:, "Department"], m[:, "Salary"])
+# Output: a window with a bar chart opens
+#
+chart(bar, m[:, "Department"], m[:, "Salary"],
+      title "Salaries", color "red", save "chart.png")
+#
+chart(line, m[:, "Month"], m[:, "Sales"], plotly)
+#
+chart(hist, m[:, "Age"], bins 10)
+
+
+# ============================================================
+# 24. REPORTS
+# ============================================================
+
+# ------------------------------------------------------------
+# 24.1 report — HTML report with charts
+# ------------------------------------------------------------
+# Syntax:
+#   report("Title", "file.html")
+#   report_section("1. General information")
+#   report_text("Text")
+#   report_table(m [, title "Title"])
+#   report_chart(kind, x, y [, options])
+#   report_save([true|false])
+#   report_show()
+#   report_save_pdf("file.pdf")
+#
+# Example:
+m = ["Department", "Salary";
+     "IT", 50000;
+     "HR", 60000]
+report("Salary analysis", "report.html")
+report_section("1. Data")
+report_table(m, title "Salary table")
+report_chart(bar, m[:, "Department"], m[:, "Salary"], title "Salaries")
+report_save()
+# Output: browser opens with the report
+
+
+# ============================================================
+# 25. RESERVED WORDS
+# ============================================================
+#
+# Control:      if, then, else, for, while, break
+# Logical:      and, or, not, true, false, None
+# Indexing:     all, end, begin, last
+# Modifiers:    before, after, AZ, ZA, inside, ignore,
+#               approx, skip, vertical, horizontal, when
+# find:         rows, cols
+# matrixmod:    delete, insert, duplicate, clear, keep, swap
+# groupby:      by, agg, having
+# Modes:        BigData, Table
+# Aggregates:   count, sum, min, max, avg
+# Error handling: try, catch, error
+# Analytics:    abc, percentof, anomaly,
+#               coef, iqr, zscore, percentile, only
+# Conditional:  sumif, countif, avgif, minif, maxif,
+#               medianif, countuniqueif, sumproduct
+# Charts:       chart, bar, line, pie, hist, scatter,
+#               box, heatmap, pair,
+#               title, save, bins, color, xlabel, ylabel,
+#               plotly, static
+# Reports:      report, report_section, report_text,
+#               report_table, report_chart, report_save,
+#               report_show, report_save_pdf
+# addrows:      addrows
+# Window:       rownumber, rank, denserank, percentrank,
+#               cumedist, ntile, lag, lead,
+#               firstvalue, lastvalue, nthvalue,
+#               winsum, winavg, wincount, winmin, winmax,
+#               winmedian, winstdev, qualify, order
+# Strings:      trim, trimleft, trimright
+# Dates:        year, month, day, quarter,
+#               weekday, weekdayname, monthname,
+#               adddays, addmonths, addyears, datetrunc,
+#               date, datediff, datenow, timenow
+# Other:        addcolumn, isnone
+# ============================================================

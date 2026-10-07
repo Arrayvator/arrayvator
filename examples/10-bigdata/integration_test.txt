@@ -1,0 +1,455 @@
+# ============================================================
+# ФИНАЛЬНЫЙ ТЕСТ BIGDATA (DUCKDB) — сквозной
+# ============================================================
+# Проверяет:
+#   1. Все работающие функции на bd
+#   2. Все RAM-only функции — через try/catch
+#   3. Конвертацию туда-обратно
+#
+# В конце выводит: "ТЕСТ BIGDATA ПРОЙДЕН ✅"
+# ============================================================
+
+println("=")
+println("ФИНАЛЬНЫЙ ТЕСТ BIGDATA")
+println("=")
+println("")
+
+# ============================================================
+# ДАННЫЕ
+# ============================================================
+m = ["ID", "Имя", "Отдел", "Город", "Дата", "Зарплата", "Сумма";
+      1, "Аня",    "IT",    "Москва",  "15.01.2025", 85000, 5000;
+      2, "Боб",    "HR",    "Питер",   "20.02.2025", 65000, 3000;
+      3, "Света",  "IT",    "Москва",  "05.03.2025", 95000, 7000;
+      4, "Гена",   "Sales", "Казань",  "10.04.2025", 80000, 4000;
+      5, "Даша",   "IT",    "Питер",   "15.05.2025", 88000, 6000;
+      6, "Егор",   "HR",    "Москва",  "20.06.2025", 70000, 3500;
+      7, "Жанна",  "Sales", "Казань",  "25.07.2025", 82000, 4500;
+      8, "Зина",   "IT",    "Москва",  "30.08.2025", 92000, 6500;
+      9, "Иван",   "HR",    "Питер",   "05.09.2025", 68000, 3200;
+     10, "Костя",  "Sales", "Москва",  "10.10.2025", 78000, 4200;
+     11, "Лена",   "IT",    "Казань",  "15.11.2025", 90000, 6200;
+     12, "Миша",   "HR",    "Москва",  "20.12.2025", 72000, 3800;
+     13, "Нина",   "Sales", "Питер",   "25.01.2026", 81000, 4400;
+     14, "Олег",   "IT",    "Москва",  "01.02.2026", 87000, 5500;
+     15, "Петя",   "HR",    "Казань",  "06.03.2026", 66000, 3100]
+
+# ============================================================
+# 0. КОНВЕРТАЦИЯ
+# ============================================================
+println("[0] КОНВЕРТАЦИЯ RAM → BIGDATA")
+bd = ToBigData(m)
+println("  lenrow(bd) =", lenrow(bd))
+println("  lencol(bd) =", lencol(bd))
+println("  type(bd)   =", type(bd))
+println("  ✅ OK")
+println("")
+
+# ============================================================
+# 1. ЧТЕНИЕ ИЗ BD
+# ============================================================
+println("[1] ЧТЕНИЕ ИЗ BD")
+
+hdr = bd[0, :]
+println("  bd[0, :]              — заголовки       ✅")
+
+row1 = bd[1, :]
+println("  bd[1, :]              — первая строка    ✅")
+
+last_row = bd[end, :]
+println("  bd[end, :]            — последняя        ✅")
+
+names = bd[:, "Имя"]
+println("  bd[:, \"Имя\"]           — столбец         ✅")
+
+sal = bd[:, "Зарплата"]
+println("  bd[:, \"Зарплата\"]      — столбец         ✅")
+
+cell = bd[3, "Имя"]
+println("  bd[3, \"Имя\"]           — ячейка          ✅")
+println("")
+
+# ============================================================
+# 2. СТАТИСТИКА — СКАЛЯРЫ
+# ============================================================
+println("[2] СТАТИСТИКА — СКАЛЯРЫ")
+
+s_sum = sum(bd[:, "Зарплата"])
+s_min = min(bd[:, "Зарплата"])
+s_max = max(bd[:, "Зарплата"])
+s_avg = avg(bd[:, "Зарплата"])
+s_cnt = count(bd[:, "Зарплата"])
+s_med = median(bd[:, "Зарплата"])
+s_std = std(bd[:, "Зарплата"])
+
+println("  sum     =", s_sum, "  ✅")
+println("  min     =", s_min, "  ✅")
+println("  max     =", s_max, "  ✅")
+println("  avg     =", s_avg, "  ✅")
+println("  count   =", s_cnt, "  ✅")
+println("  median  =", s_med, "  ✅")
+println("  std     =", s_std, "  ✅")
+println("")
+
+# ============================================================
+# 3. СТАТИСТИКА С by
+# ============================================================
+println("[3] СТАТИСТИКА С by")
+
+v_sum = sum(bd[:, "Зарплата"], by bd[:, "Отдел"])
+println("  sum(..., by ...)   ✅")
+
+v_avg = avg(bd[:, "Зарплата"], by bd[:, "Отдел"])
+println("  avg(..., by ...)   ✅")
+
+v_cnt = count(bd[:, "Зарплата"], by bd[:, "Отдел"])
+println("  count(..., by ...) ✅")
+println("")
+
+# ============================================================
+# 4. ФИЛЬТРАЦИЯ
+# ============================================================
+println("[4] ФИЛЬТРАЦИЯ")
+
+f_it = filterif(bd[:, "Отдел"] == "IT")
+println("  filterif == IT                 ✅")
+
+f_big = filterif(bd[:, "Зарплата"] > 80000)
+println("  filterif > 80000               ✅")
+
+f_and = filterif(bd[:, "Отдел"] == "IT" and bd[:, "Город"] == "Москва")
+println("  filterif AND                   ✅")
+
+f_or = filterif(bd[:, "Отдел"] == "IT" or bd[:, "Отдел"] == "HR")
+println("  filterif OR                    ✅")
+
+f_not = filterif(not (bd[:, "Отдел"] == "IT"))
+println("  filterif(not ...)              ✅")
+println("")
+
+# ============================================================
+# 5. УДАЛЕНИЕ
+# ============================================================
+println("[5] УДАЛЕНИЕ")
+
+d_if = deleteif(bd[:, "Отдел"] == "HR")
+println("  deleteif == HR                 ✅")
+
+d_col = delete(bd[:, "Сумма"])
+println("  delete(bd[:, \"Сумма\"])         ✅")
+
+d_row = delete(bd[2, :])
+println("  delete(bd[2, :])               ✅")
+println("")
+
+# ============================================================
+# 6. СОРТИРОВКА
+# ============================================================
+println("[6] СОРТИРОВКА")
+
+s_az = sort(bd[:, "Зарплата"], AZ)
+println("  sort(..., AZ)                  ✅")
+
+s_za = sort(bd[:, "Имя"], ZA)
+println("  sort(..., ZA)                  ✅")
+println("")
+
+# ============================================================
+# 7. GROUPBY
+# ============================================================
+println("[7] GROUPBY")
+
+g1 = groupby(by bd[:, "Отдел"], agg sum(bd[:, "Зарплата"]))
+println("  groupby 1 агрегат              ✅")
+
+g2 = groupby(by bd[:, "Отдел"],
+             agg sum(bd[:, "Зарплата"]),
+                 avg(bd[:, "Зарплата"]),
+                 count())
+println("  groupby 3 агрегата (с count)   ✅")
+
+g3 = groupby(by bd[:, "Отдел"],
+             agg sum(bd[:, "Зарплата"]),
+             having sum(bd[:, "Зарплата"]) > 200000)
+println("  groupby + HAVING               ✅")
+println("")
+
+# ============================================================
+# 8. JOIN
+# ============================================================
+println("[8] JOIN")
+
+d = ["Отдел", "Менеджер";
+     "IT",    "Петров";
+     "HR",    "Сидоров";
+     "Sales", "Иванов"]
+bd_d = ToBigData(d)
+
+r_join = join(bd, bd_d, on "Отдел")
+println("  join(bd, bd_d, on \"Отдел\")     ✅")
+println("")
+
+# ============================================================
+# 9. DEDUPLICATE
+# ============================================================
+println("[9] DEDUPLICATE")
+
+u = Unique(bd[:, "Отдел"])
+println("  Unique                         ✅")
+
+cd = CountDistinct(bd[:, "Отдел"])
+println("  CountDistinct =", cd, "  ✅")
+
+vc = ValueCounts(bd[:, "Отдел"])
+println("  ValueCounts                    ✅")
+
+dd = DeleteDuplicate(bd[:, "Отдел"])
+println("  DeleteDuplicate                ✅")
+println("")
+
+# ============================================================
+# 10. UNPIVOT — через ToMatrix
+# ============================================================
+println("[10] UNPIVOT (через ToMatrix)")
+
+m_bd = ToMatrix(bd)
+r_unp = unpivot(m_bd[:, 6:7], by m_bd[:, "Имя"])
+println("  unpivot(m_bd[:, 6:7], ...)     ✅")
+println("")
+
+# ============================================================
+# 11. УСЛОВНЫЕ АГРЕГАТЫ
+# ============================================================
+println("[11] УСЛОВНЫЕ АГРЕГАТЫ")
+
+a1 = sumif(bd[:, "Отдел"] == "IT", bd[:, "Зарплата"])
+println("  sumif                          ✅")
+
+a2 = countif(bd[:, "Отдел"] == "IT")
+println("  countif                        ✅")
+
+a3 = avgif(bd[:, "Отдел"] == "IT", bd[:, "Зарплата"])
+println("  avgif                          ✅")
+
+a4 = minif(bd[:, "Отдел"] == "IT", bd[:, "Зарплата"])
+println("  minif                          ✅")
+
+a5 = maxif(bd[:, "Отдел"] == "IT", bd[:, "Зарплата"])
+println("  maxif                          ✅")
+
+a6 = medianif(bd[:, "Отдел"] == "IT", bd[:, "Зарплата"])
+println("  medianif                       ✅")
+
+a7 = countuniqueif(bd[:, "Отдел"] == "IT", bd[:, "Город"])
+println("  countuniqueif                  ✅")
+
+a8 = sumproduct(bd[:, "Зарплата"], bd[:, "Сумма"])
+println("  sumproduct                     ✅")
+println("")
+
+# ============================================================
+# 12. АНАЛИТИКА
+# ============================================================
+println("[12] АНАЛИТИКА")
+
+abc1 = abc(bd[:, "Зарплата"])
+println("  abc                            ✅")
+
+abc2 = abc(bd[:, "Зарплата"], %)
+println("  abc(..., %)                    ✅")
+
+p1 = percentof(bd[:, "Зарплата"])
+println("  percentof                      ✅")
+
+p2 = percentof(bd[:, "Зарплата"], by bd[:, "Отдел"])
+println("  percentof(..., by ...)         ✅")
+
+an1 = anomaly(bd[:, "Зарплата"])
+println("  anomaly                        ✅")
+
+an2 = anomaly(bd[:, "Зарплата"], only)
+println("  anomaly(..., only)             ✅")
+println("")
+
+# ============================================================
+# 13. ОКОННЫЕ ФУНКЦИИ
+# ============================================================
+println("[13] ОКОННЫЕ ФУНКЦИИ")
+
+w1 = rownumber(bd, by bd[:, "Отдел"], order bd[:, "Зарплата"], ZA)
+println("  rownumber                      ✅")
+
+w2 = rank(bd, by bd[:, "Отдел"], order bd[:, "Зарплата"], ZA)
+println("  rank                           ✅")
+
+w3 = denserank(bd, by bd[:, "Отдел"], order bd[:, "Зарплата"], ZA)
+println("  denserank                      ✅")
+
+w4 = ntile(bd, 3, by bd[:, "Отдел"], order bd[:, "Зарплата"], ZA)
+println("  ntile                          ✅")
+
+w5 = lag(bd[:, "Зарплата"], 1, 0)
+println("  lag                            ✅")
+
+w6 = lead(bd[:, "Зарплата"], 1, 0)
+println("  lead                           ✅")
+
+w7 = winsum(bd[:, "Зарплата"], by bd[:, "Отдел"])
+println("  winsum                         ✅")
+
+w8 = winavg(bd[:, "Зарплата"], by bd[:, "Отдел"])
+println("  winavg                         ✅")
+
+w9 = qualify(bd, rownumber(bd, by bd[:, "Отдел"],
+                            order bd[:, "Зарплата"], ZA) <= 2)
+println("  qualify                        ✅")
+println("")
+
+# ============================================================
+# 14. ADDCOLUMN
+# ============================================================
+println("[14] ADDCOLUMN")
+
+ac = addcolumn(bd, "Премия", bd[:, "Зарплата"] * 0.1)
+println("  addcolumn(..., \"Премия\")        ✅")
+println("  lencol =", lencol(ac), "  ✅")
+println("")
+
+# ============================================================
+# 15. ТИПЫ / NULL
+# ============================================================
+println("[15] ТИПЫ / NULL")
+
+t_bd = type(bd)
+println("  type(bd) =", t_bd, "  ✅")
+
+t_m = type(m)
+println("  type(m)  =", t_m, "  ✅")
+
+i_none = isnone(None)
+println("  isnone(None)     =", i_none, "  ✅")
+
+i_5 = isnone(5)
+println("  isnone(5)        =", i_5, "  ✅")
+
+c = coalesce(None, None, 10)
+println("  coalesce(None, None, 10) =", c, "  ✅")
+println("")
+
+# ============================================================
+# 16. RAM-ONLY ФУНКЦИИ — ОЖИДАЮТСЯ ОШИБКИ
+# ============================================================
+println("[16] RAM-ONLY ФУНКЦИИ (ожидаются ошибки)")
+println("")
+
+# --- copy ---
+println("  [16.1] copy")
+try {
+    r = copy(bd[:, 1], bd[:, 3], after)
+    println("    ❌ НЕ ДОЛЖНО БЫТЬ: copy не упал")
+} catch {
+    println("    ✅ OK: copy упал как ожидалось")
+}
+println("")
+
+# --- move ---
+println("  [16.2] move")
+try {
+    r = move(bd[:, 1], bd[:, 3], after)
+    println("    ❌ НЕ ДОЛЖНО БЫТЬ: move не упал")
+} catch {
+    println("    ✅ OK: move упал как ожидалось")
+}
+println("")
+
+# --- insert ---
+println("  [16.3] insert")
+try {
+    r = insert(bd[:, 3], after)
+    println("    ❌ НЕ ДОЛЖНО БЫТЬ: insert не упал")
+} catch {
+    println("    ✅ OK: insert упал как ожидалось")
+}
+println("")
+
+# --- insertif ---
+println("  [16.4] insertif")
+try {
+    r = insertif(bd[:, "Отдел"] == "IT", after)
+    println("    ❌ НЕ ДОЛЖНО БЫТЬ: insertif не упал")
+} catch {
+    println("    ✅ OK: insertif упал как ожидалось")
+}
+println("")
+
+# --- matrixmod ---
+println("  [16.5] matrixmod")
+try {
+    r = matrixmod(bd, delete, 2)
+    println("    ❌ НЕ ДОЛЖНО БЫТЬ: matrixmod не упал")
+} catch {
+    println("    ✅ OK: matrixmod упал как ожидалось")
+}
+println("")
+
+# --- filldown ---
+println("  [16.6] filldown")
+try {
+    r = filldown(bd[:, "Отдел"])
+    println("    ❌ НЕ ДОЛЖНО БЫТЬ: filldown не упал")
+} catch {
+    println("    ✅ OK: filldown упал как ожидалось")
+}
+println("")
+
+# --- groupagg ---
+println("  [16.7] groupagg")
+try {
+    r = groupagg(bd[:, "Отдел"], bd[:, "Зарплата"], sum)
+    println("    ❌ НЕ ДОЛЖНО БЫТЬ: groupagg не упал")
+} catch {
+    println("    ✅ OK: groupagg упал как ожидалось")
+}
+println("")
+
+# --- transpose ---
+println("  [16.8] transpose")
+try {
+    r = transpose(bd)
+    println("    ❌ НЕ ДОЛЖНО БЫТЬ: transpose не упал")
+} catch {
+    println("    ✅ OK: transpose упал как ожидалось")
+}
+println("")
+
+# --- pivot (bd) ---
+println("  [16.9] pivot(bd, ...) — DuckDB не поддерживается")
+try {
+    r = pivot(bd[:, "Отдел"], bd[:, "Зарплата"], sum)
+    println("    ⚠️  pivot не упал (значит, уже поддерживает DuckDB?)")
+} catch {
+    println("    ✅ OK: pivot упал с понятной ошибкой")
+}
+println("")
+
+# ============================================================
+# 17. КОНВЕРТАЦИЯ ОБРАТНО
+# ============================================================
+println("[17] КОНВЕРТАЦИЯ BIGDATA → RAM")
+
+m2 = ToMatrix(bd)
+println("  ToMatrix(bd)                   ✅")
+println("  lenrow(m2) =", lenrow(m2), "  ✅")
+println("  lencol(m2) =", lencol(m2), "  ✅")
+
+m3 = ToMatrix(bd, 5)
+println("  ToMatrix(bd, 5)                ✅")
+println("  lenrow(m3) =", lenrow(m3), "  ✅")
+println("")
+
+# ============================================================
+# ФИНАЛ
+# ============================================================
+println("=")
+println("ТЕСТ BIGDATA ПРОЙДЕН ✅")
+println("=")

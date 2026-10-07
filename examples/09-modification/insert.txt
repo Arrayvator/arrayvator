@@ -1,0 +1,64 @@
+# ============================================================
+# insert — все режимы
+# ============================================================
+
+m = ["A", "B", "C";
+     1, 2, 3;
+     4, 5, 6]
+
+print("Исходная:")
+print(m)
+print("")
+
+print("insert(m[2, :], before):")
+r = insert(m[2, :], before)
+print(r)
+print("")
+
+print("insert(m[2, :], after):")
+r = insert(m[2, :], after)
+print(r)
+print("")
+
+print("insert(m[1, :], before):")
+r = insert(m[1, :], before)
+print(r)
+print("")
+
+print("insert(m[3, :], after):")
+r = insert(m[3, :], after)
+print(r)
+print("")
+
+# ============================================================
+# insert — столбцы
+# ============================================================
+print()
+print("insert(m[:, 2], before):")
+r = insert(m[:, 2], before)
+print(r)
+print("")
+
+print("insert(m[:, 2], after):")
+r = insert(m[:, 2], after)
+print(r)
+print("")
+
+print("insert(m[:, 1], before):")
+r = insert(m[:, 1], before)
+print(r)
+print("")
+
+print("insert(m[:, end], after):")
+r = insert(m[:, end], after)
+print(r)
+print("")
+
+print("insert(m[:, 'A'], before):")
+r = insert(m[:, "A"], before)
+print(r)
+print("")
+
+print("insert(m[:, 'C'], after):")
+r = insert(m[:, "C"], after)
+print(r)

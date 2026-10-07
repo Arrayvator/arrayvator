@@ -1,0 +1,23 @@
+=
+
+println("=== 1.1. Данные ===")
+m = ["Отдел", "Зарплата";
+     "IT",    80000;
+     "IT",    95000;
+     "HR",    60000;
+     "HR",    72000;
+     "Sales", 88000]
+print(m)
+println("")
+
+println("=== 1.2. Без having — все 3 группы ===")
+r = groupby(by m[:, "Отдел"], agg sum(m[:, "Зарплата"]))
+print(r)
+println("")
+
+println("=== 1.3. С having — только группы с суммой > 150000 ===")
+r = groupby(by m[:, "Отдел"],
+            agg sum(m[:, "Зарплата"]),
+            having sum(m[:, "Зарплата"]) > 150000)
+print(r)
+println("")
