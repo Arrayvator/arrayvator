@@ -158,4 +158,106 @@ We're applying for a free open-source code-signing certificate
 
 ## 🚀 Quick Start
 
+```
+m = ["Name", "Department", "Salary";
+     "Anna", "IT", 85000;
+     "Bob", "HR", 65000;
+     "Eve", "IT", 95000]
 
+r = filterif(m[:, "Department"] == "IT")
+print(r)
+```
+
+Output:
+
+```
+Name  Department  Salary
+Anna  IT          85000
+Eve   IT          95000
+```
+
+---
+
+## 📚 Examples
+
+The [`examples/`](examples/) folder contains **68 self-contained recipes**
+organized by topic:
+
+| Category | What's inside |
+|---|---|
+| **Basics** | Loops, conditions, matrices, strings |
+| **Filtering** | `filterif`, `deleteif` vs loops |
+| **Aggregates** | `sum`, `avg`, `sumif`, `countif` |
+| **Grouping** | `groupby`, `pivot`, `groupagg` — 4 ways to compute the same |
+| **Window functions** | `rank`, `lag`, `ntile`, `qualify` |
+| **Analytics** | `abc`, `anomaly`, `percentof` |
+| **Dates** | Full reference for dates and time |
+| **Joins** | `join`, `joinarray`, `unpivot`, `vlookup` |
+| **BigData** | Matrix vs DuckDB comparison |
+
+Each example is a self-contained file with comments, code, and expected
+output. Run them with **F5** in the editor.
+
+---
+
+## 🐍 Installation from source
+
+**Requirements:**
+
+- Python 3.10+
+- Windows / Linux / macOS
+
+**Setup:**
+
+```bash
+git clone https://github.com/Arrayvator/arrayvator.git
+cd arrayvator
+pip install -r requirements.txt
+python main.py
+```
+
+**Dependencies:** `duckdb`, `python-calamine`, `pyexcelerate`, `openpyxl`,
+`matplotlib`, `plotly`, `playwright`, `pyinstaller`.
+
+---
+
+## 📖 Documentation
+
+- [`examples/`](examples/) — 68 ready-to-run recipes
+- [`help/`](help/) — help files (Russian + English)
+
+---
+
+## 📜 Language rules
+
+Some key rules of ArrayVator:
+
+1. **All functions return a value** — save the result:
+   ```
+   m = filterif(m[:, "Department"] == "IT")
+   ```
+2. **`None`** is the only empty-value literal (`null`, `nan` are forbidden).
+3. **`=`** — assignment. **`==`** — comparison.
+4. **Logical operators:** `and`, `or`, `not`.
+5. **Indexing starts at 1** — `m[1, :]` is the header row.
+6. **Header rule:**
+   - `m[:, "Name"]` — header does NOT take part
+   - `m[:, 3]` — header DOES take part
+7. **DuckDB (BigData) is read-only** — some functions are Matrix-only.
+
+See [`examples/`](examples/) for details.
+
+---
+
+## 📄 License
+
+MIT — see [LICENSE](LICENSE).
+
+---
+
+## 👤 Author
+
+**Arrayvator**
+
+- Website: [arrayvator.ru](http://arrayvator.ru/)
+- GitHub: [@Arrayvator](https://github.com/Arrayvator)
