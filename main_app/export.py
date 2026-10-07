@@ -28,7 +28,7 @@ def show_export_help(app):
         return
 
     if not app.current_file:
-        code = app.editor.get(1.0, tk.END).strip()
+        code = app.editor.get(1.0, "end-1c").strip()
         if code:
             ans = messagebox.askyesnocancel(
                 "Build EXE",
@@ -44,8 +44,14 @@ def show_export_help(app):
 
     try:
         if kind == "exe":
-            subprocess.Popen([path], cwd=os.path.dirname(path))
+            # Прямой запуск файла — как двойной клик в проводнике.
+            # os.startfile() использует Windows API и НЕ наследует
+            # консоль/рабочую папку от ArrayVator.exe.
+            # Это решает проблему, когда subprocess.Popen() падает
+            # в frozen-сборке с --noconsole.
+            os.startfile(path)
         else:
+            # Python-скрипт — запускаем через интерпретатор.
             subprocess.Popen(
                 [sys.executable, path],
                 cwd=os.path.dirname(path),
