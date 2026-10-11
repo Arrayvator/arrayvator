@@ -5,6 +5,15 @@ from runtime.random_source import RandomSource, forbid_random
 from errors import ArrayVatorError
 
 
+# ============================================================
+# ОГРАНИЧЕНИЕ ПРЕДПРОСМОТРА ИМЁН
+# ============================================================
+# В сообщении об ошибке показываем не все имена строк,
+# а только первые N — иначе на миллионах строк список
+# растянется на экран и будет собираться вечно.
+PREVIEW_LIMIT = 10
+
+
 class AssignNode(Node):
     def __init__(self, var_name, value, is_matrix=False, is_index=False, index_node=None):
         self.var_name = var_name.lower()
@@ -574,11 +583,15 @@ class AssignNode(Node):
             r_start, r_end = self._parse_range(row_processed, matrix_obj.rows)
         elif isinstance(row_processed, str):
             # ============================================================
-            # ИМЯ СТРОКИ (не число, не диапазон, не спец-слово)
+            # ИМЯ СТРОКИ — ТОЛЬКО ПОИСК, БЕЗ СОЗДАНИЯ
             # ============================================================
             # Ищем значение в первом столбце (строки данных, начиная с 1).
             # Если нашли — берём его позицию (1-based).
-            # Если не нашли — добавляем в КОНЕЦ таблицы.
+            # Если НЕ нашли — ОШИБКА (не создаём новую строку).
+            #
+            # ПРИЧИНА: строк может быть сотни миллионов.
+            # Автосоздание по имени было бы опасно — опечатка
+            # создавала бы мусорную строку в огромной таблице.
             # ============================================================
             found_row = None
             name_lower = row_processed.strip().lower()
@@ -589,18 +602,49 @@ class AssignNode(Node):
                         found_row = i + 1     # 1-based
                         break
 
-            if found_row is not None:
-                r_kind = 'single'
-                r_start = found_row
-                r_end = found_row
-            else:
-                # Новая строка → в КОНЕЦ таблицы
-                r_kind = 'single'
-                r_start = matrix_obj.rows + 1
-                r_end = r_start
-                is_new_row_name = True
-                new_row_name = row_processed
-                self._ensure_rows(matrix_obj, r_start)
+            if found_row is None:
+                # ============================================================
+                # Собираем список доступных имён — ОГРАНИЧЕННО
+                # ============================================================
+                # Не «все имена», а только первые PREVIEW_LIMIT,
+                # иначе на миллионах строк список растянется на экран.
+                # ============================================================
+                available = []
+                total_rows = len(matrix_obj.data) - 1   # без заголовка
+
+                for i in range(1, min(len(matrix_obj.data), PREVIEW_LIMIT + 1)):
+                    if i < len(matrix_obj.data[i]) and len(matrix_obj.data[i]) > 0:
+                        cell = matrix_obj.data[i][0]
+                        if cell is not None:
+                            available.append(f'"{cell}"')
+
+                if total_rows > PREVIEW_LIMIT:
+                    available_str = ", ".join(available) + f", ... (всего {total_rows})"
+                elif available:
+                    available_str = ", ".join(available)
+                else:
+                    available_str = "(нет строк)"
+
+                raise ArrayVatorError(
+                    code="ROW_NAME_NOT_FOUND",
+                    context=None,
+                    message=(
+                        f"Строка с именем '{row_processed}' не найдена "
+                        f"в первом столбце."
+                    ),
+                    suggestion=(
+                        f"Доступные имена: {available_str}\n"
+                        f"\n"
+                        f"Если хотите ДОБАВИТЬ строку — используйте номер:\n"
+                        f"     m[{matrix_obj.rows + 1}, :] = ...\n"
+                        f"\n"
+                        f"Если хотите ЗАМЕНИТЬ строку — проверьте написание имени."
+                    ),
+                )
+
+            r_kind = 'single'
+            r_start = found_row
+            r_end = found_row
         else:
             r_kind = 'single'
             r_start = 1
