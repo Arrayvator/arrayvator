@@ -1,29 +1,52 @@
-print("=== 1.5. None через try/catch ===")
+# Try/Catch и None
 
+# round(None) → ошибка
 try {
     r = round(None)
-    print("round(None)       =", r)
+    print(r)
+    println()
 } catch {
-    print("round(None)       → ошибка:", error)
+    print("round(None) → ошибка:  ")
+    println(error)
 }
+# После:
+# round(None) → ошибка:  round() работает с числами, векторами и матрицами, получен <class 'NoneType'>
 
+
+# int(None) → ошибка
 try {
     r = int(None)
-    print("int(None)         =", r)
+    print(r)
+    println()
 } catch {
-    print("int(None)         → ошибка:", error)
+    print("int(None) → ошибка:  ")
+    println(error)
 }
+# После:
+# int(None) → ошибка:  int() работает с числами, векторами и матрицами, получен <class 'NoneType'>
 
+
+# frac(None) → ошибка
 try {
     r = frac(None)
-    print("frac(None)        =", r)
+    print(r)
+    println()
 } catch {
-    print("frac(None)        → ошибка:", error)
+    print("frac(None) → ошибка:  ")
+    println(error)
 }
+# После:
+# frac(None) → ошибка:  frac() работает с числами, векторами и матрицами, получен <class 'NoneType'>
 
+
+# frac_digits(None) → ошибка
 try {
     r = frac_digits(None)
-    print("frac_digits(None) =", r)
+    print(r)
+    println()
 } catch {
-    print("frac_digits(None) → ошибка:", error)
+    print("frac_digits(None) → ошибка:  ")
+    println(error)
 }
+# После:
+# frac_digits(None) → ошибка:  frac_digits() работает с числами, векторами и матрицами, получен <class 'NoneType'>

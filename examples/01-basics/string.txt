@@ -1,220 +1,323 @@
-# 1. SPLIT
+# Строки
 
-print("▶ 1. split")
-print("")
-
-# 1.1 Без разделителя — по символам
+# split: без разделителя — по символам
 r = split("Hello")
-print("  split('Hello'): ", r)
+print(r)
+println()
+# После:
+# H e l l o
 
-# 1.2 С разделителем
+
+# split: с разделителем
 r = split("a-b-c", "-")
-print("  split('a-b-c': '-'): ",r)
+print(r)
+println()
+# После:
+# a b c
 
-# 1.3 Skip пустых
+
+# split: skip пустых
 r = split("a,,b,,c", ",", skip)
-print("  split('a,,b,,c', ',', skip): ",r)
+print(r)
+println()
+# После:
+# a b c
 
-# 1.4 Пустой разделитель между двумя
+
+# split: с разделителем ;
 r = split("a;b;c", ";")
-print("  split('a;b;c', ';'):", r)
-print("")
+print(r)
+println()
+# После:
+# a b c
 
 
-# 2. JOINVECTOR
-
-print("▶ 2. joinvector")
-print("")
-
-# 2.1 Со строками
+# joinvector: со строками
 r = joinvector(["a", "b", "c"], "-")
-print("  joinvector(['a','b','c'], '-'): ",r)
+print(r)
+println()
+# После:
+# a-b-c
 
-# 2.2 С числами
+
+# joinvector: с числами
 r = joinvector([10, 20, 30], ", ")
-print("  joinvector([10,20,30], ', '): ", r)
+print(r)
+println()
+# После:
+# 10, 20, 30
 
-# 2.3 Без разделителя — просто склейка
+
+# joinvector: без разделителя — склейка
 r = joinvector(["H", "i"])
-print("  joinvector(['H','i']): ", r)
+print(r)
+println()
+# После:
+# Hi
 
-# 2.4 Вектор-переменная
+
+# joinvector: вектор-переменная
 v = split("one two three", " ")
 r = joinvector(v, "_")
-print("  joinvector(split('one two three',' '), '_'): ", r)
-print("")
+print(r)
+println()
+# После:
+# one_two_three
 
-# 3. REPLACETEXT
-print("▶ 3. replacetext")
-print("")
 
-# 3.1 Простая замена в строке
+# replacetext: простая замена в строке
 r = replacetext("Hello", "l", "p")
-print("  replacetext('Hello', 'l', 'p'): ", r)
-print()
+print(r)
+println()
+# После:
+# Heppo
 
-# 3.2 В столбце (вектор), присваивание в столбец
+
+# replacetext: в столбце, присваивание в столбец
 m = ["Имя", "Отдел";
      "Аня",  "IT";
      "Боб",  "HR";
      "Света", "IT";
      "Гена", "Sales"]
-print(m)
-print()
-print("replacetext(m[:, 'Отдел'], 'IT', '--')")
 m[:, "Отдел"] = replacetext(m[:, "Отдел"], "IT", "--")
-print()
-print(m)
-print()
+println(m)
+# После:
+# Имя    Отдел
+# Аня    --
+# Боб    HR
+# Света  --
+# Гена   Sales
 
 
-# 3.3 ignore — без учёта регистра
+# replacetext: ignore — без учёта регистра
+m = ["Имя", "Отдел";
+     "Аня",  "IT";
+     "Боб",  "HR";
+     "Света", "IT";
+     "Гена", "Sales"]
 r = replacetext(m[:, "Отдел"], "it", "--", ignore)
-print("  replacetext(m[:, 'Отдел'], 'it', '--', ignore):")
-print("   ", r)
-# ОЖИДАНИЕ: ["--", "HR", "--", "Sales"]
+print(r)
+println()
+# После:
+# -- HR -- Sales
 
 
-# ============================================================
-# 4. TRIM / TRIMLEFT / TRIMRIGHT
-# ============================================================
-print("▶ 4. trim / trimleft / trimright")
-print("")
-
-# 4.1 trim — с обеих сторон
+# trim: с обеих сторон
 r = trim("  hello  ")
-print("  trim('  hello  '): ", r)
+print(r)
+println()
+# После:
+# hello
 
 
-# 4.2 trim с символами
+# trim: с символами
 r = trim("...hello...", ".")
-print("  trim('...hello...', '.'): ", r)
+print(r)
+println()
+# После:
+# hello
 
-# 4.3 trimleft
+
+# trimleft
 r = trimleft("  hello  ")
-print("  trimleft('  hello  '): ", r)
+print(r)
+println()
+# После:
+# hello   
 
-# 4.4 trimright
+
+# trimright
 r = trimright("  hello  ")
-print("  trimright('  hello  '): ", r)
+print(r)
+println()
+# После:
+# hello
 
 
-# 4.5 trimleft с символами
+# trimleft: с символами
 r = trimleft("00042", "0")
-print("  trimleft('00042', '0'): ", r)
+print(r)
+println()
+# После:
+# 42
 
 
-# 4.6 trimright с символами
+# trimright: с символами
 r = trimright("42.00.00", "0")
-print("  trimright('42.00.00', '0'): ", r)
+print(r)
+println()
+# После:
+# 42.00.
 
-# 4.7 None остаётся None
+
+# trim: None остаётся None
 r = trim(None)
-print("  trim(None): ", r)
+print(r)
+println()
+# После:
+# None
 
 
-# 4.8 Числа не трогаются
+# trim: числа не трогаются
 r = trim(42)
-print("  trim(42): ", r)
+print(r)
+println()
+# После:
+# 42
 
-# 4.9 Вектор
+
+# trim: вектор
 m3 = ["Имя";
       "  Аня  ";
       " Боб ";
       "Вера"]
 r = trim(m3[:, "Имя"])
-print("  trim(m3[:, 'Имя']): ", r)
+print(r)
+println()
+# После:
+# Аня Боб Вера
 
 
-# 5. DELETETEXTLEFT / DELETETEXTRIGHT
-
-print("▶ 5. deletetextleft / deletetextright")
-print("")
-
-# 5.1 deletetextleft
+# deletetextleft
 r = deletetextleft("PR-001", 3)
-print("  deletetextleft('PR-001', 3): ", r)
+print(r)
+println()
+# После:
+# 001
 
-# 5.2 deletetextright
+
+# deletetextright
 r = deletetextright("PR-001", 2)
-print("  deletetextright('PR-001', 2): ", r)
+print(r)
+println()
+# После:
+# PR-0
 
-# 5.3 В столбце
+
+# deletetextleft: в столбце
 m4 = ["Код";
       "PR-001";
       "PR-002";
       "PR-003"]
 r = deletetextleft(m4[:, "Код"], 3)
-print("  deletetextleft(m4[:, 'Код'], 3): ", r)
+print(r)
+println()
+# После:
+# 001 002 003
 
-# 5.4 Если удаляем всё — None
+
+# deletetextleft: если удаляем всё — None
 r = deletetextleft("AB", 5)
-print("  deletetextleft('AB', 5): ", r)
+print(r)
+println()
+# После:
+# None
 
-# 5.5 N=0 — ничего не удаляется
+
+# deletetextleft: N=0 — ничего не удаляется
 r = deletetextleft("HELLO", 0)
-print("  deletetextleft('HELLO', 0): ", r)
+print(r)
+println()
+# После:
+# HELLO
 
 
-# 6. CLEAN
-
-print("▶ 6. clean")
-print("")
-
-# 6.1 digits — только цифры
+# clean: digits — только цифры
 r = clean("AB-123", "digits")
-print("  clean('AB-123', 'digits'): ", r)
+print(r)
+println()
+# После:
+# 123
 
-# 6.2 letters — только буквы
+
+# clean: letters — только буквы
 r = clean("AB-123", "letters")
-print("  clean('AB-123', 'letters'): ", r)
+print(r)
+println()
+# После:
+# AB
 
-# 6.3 special — только спецсимволы
+
+# clean: special — только спецсимволы
 r = clean("AB-123!?", "special")
-print("  clean('AB-123!?', 'special'): ", r)
+print(r)
+println()
+# После:
+# -!?
 
-# 6.4 alnum — буквы и цифры
+
+# clean: alnum — буквы и цифры
 r = clean("AB-123!?", "alnum")
-print("  clean('AB-123!?', 'alnum'): ", r)
+print(r)
+println()
+# После:
+# AB123
 
-# 6.5 В столбце
+
+# clean: в столбце
 m5 = ["Код";
       "+7 (999) 123-45-67";
       "8-800-555-35-35";
       "(495) 123-45-67"]
 r = clean(m5[:, "Код"], "digits")
-print("  clean(m5[:, 'Код'], 'digits'): ", r)
+print(r)
+println()
+# После:
+# 79991234567 88005553535 4951234567
 
-# 7. LEN — ДЛИНА
 
-print("▶ 7. len")
-print("")
-
-# 7.1 Строка
+# len: строка
 r = len("Привет")
-print("  len('Привет'): ", r)
+print(r)
+println()
+# После:
+# 6
 
-# 7.2 Число — как строка
+
+# len: число
 r = len(42)
-print("  len(42): ", r)
+print(r)
+println()
+# После:
+# 2
 
-# 7.3 Отрицательное число — со знаком
+
+# len: отрицательное число
 r = len(-42)
-print("  len(-42): ", r)
+print(r)
+println()
+# После:
+# 3
 
-# 7.4 Float — со точкой
+
+# len: float
 r = len(3.14)
-print("  len(3.14): ", r)
+print(r)
+println()
+# После:
+# 4
 
-# 7.5 Вектор
+
+# len: вектор
 v = [10, 20, 30, 40]
 r = len(v)
-print("  len([10,20,30,40]): ", r)
+print(r)
+println()
+# После:
+# 4
 
-# 7.6 None
+
+# len: None
 r = len(None)
-print("  len(None): ", r)
+print(r)
+println()
+# После:
+# 0
 
-# 7.7 Пустая строка
+
+# len: пустая строка
 r = len("")
-print("  len(''): ", r)
+print(r)
+println()
+# После:
+# 0
