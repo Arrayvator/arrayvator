@@ -4,30 +4,35 @@ from runtime.random_source import forbid_random
 
 
 # ============================================================
+# ХЕЛПЕРЫ ТИПОВ
+# ============================================================
+def _is_vector(val):
+    from runtime.matrix import MatrExMatrix
+    return isinstance(val, MatrExMatrix) and not val.is_2d
+
+
+def _is_matrix(val):
+    from runtime.matrix import MatrExMatrix
+    return isinstance(val, MatrExMatrix) and val.is_2d
+
+
+def _is_scalar(val):
+    return isinstance(val, (int, float, bool)) or val is None
+
+
+def _is_number(val):
+    return isinstance(val, (int, float)) and not isinstance(val, bool)
+
+
+# ============================================================
 # ХЕЛПЕР: ПОЭЛЕМЕНТНОЕ СРАВНЕНИЕ
 # ============================================================
 def _scalar_cmp(a, b, op):
-    """
-    Сравнение двух скаляров с поддержкой None.
-
-    Правила:
-        None == None  → True
-        None != None  → False
-        None == 5     → False
-        5 == None     → False
-        None != 5     → True
-        5 != None     → True
-        None < 5      → False (нельзя сравнивать None по величине)
-    """
-    # ============================================================
-    # Спец-обработка None
-    # ============================================================
     if a is None or b is None:
         if op == '==':
             return a is None and b is None
         if op == '!=':
             return not (a is None and b is None)
-        # <, >, <=, >= — сравнение с None невозможно
         return False
 
     try:
@@ -43,59 +48,279 @@ def _scalar_cmp(a, b, op):
     return False
 
 
-def _is_vector(val):
-    """True, если val — 1D MatrExMatrix (вектор)."""
-    from runtime.matrix import MatrExMatrix
-    return isinstance(val, MatrExMatrix) and not val.is_2d
-
-
-def _is_matrix(val):
-    """True, если val — 2D MatrExMatrix."""
-    from runtime.matrix import MatrExMatrix
-    return isinstance(val, MatrExMatrix) and val.is_2d
-
-
 def _compare(left, right, op):
-    """
-    Поэлементное сравнение с поддержкой векторов.
-
-    Возвращает:
-        • скаляр (bool) — если оба операнда скаляры;
-        • вектор (MatrExMatrix, is_2d=False) — если хотя бы один операнд вектор.
-    """
     from runtime.matrix import MatrExMatrix
 
     left_vec = _is_vector(left)
     right_vec = _is_vector(right)
 
-    # ============================================================
-    # Оба вектора — поэлементно
-    # ============================================================
     if left_vec and right_vec:
         n = min(len(left.data), len(right.data))
-        result = []
-        for i in range(n):
-            result.append(_scalar_cmp(left.data[i], right.data[i], op))
+        result = [_scalar_cmp(left.data[i], right.data[i], op) for i in range(n)]
         return MatrExMatrix(result, False)
 
-    # ============================================================
-    # Левый — вектор, правый — скаляр
-    # ============================================================
     if left_vec:
         result = [_scalar_cmp(v, right, op) for v in left.data]
         return MatrExMatrix(result, False)
 
-    # ============================================================
-    # Левый — скаляр, правый — вектор
-    # ============================================================
     if right_vec:
         result = [_scalar_cmp(left, v, op) for v in right.data]
         return MatrExMatrix(result, False)
 
-    # ============================================================
-    # Оба скаляры
-    # ============================================================
     return _scalar_cmp(left, right, op)
+
+
+# ============================================================
+# ХЕЛПЕР: ЛОГИКА
+# ============================================================
+def _logic_and(left, right):
+    from runtime.matrix import MatrExMatrix
+
+    left_vec = _is_vector(left)
+    right_vec = _is_vector(right)
+
+    if left_vec and right_vec:
+        n = min(len(left.data), len(right.data))
+        return MatrExMatrix(
+            [bool(left.data[i]) and bool(right.data[i]) for i in range(n)],
+            False
+        )
+
+    if left_vec:
+        return MatrExMatrix(
+            [bool(v) and bool(right) for v in left.data],
+            False
+        )
+
+    if right_vec:
+        return MatrExMatrix(
+            [bool(left) and bool(v) for v in right.data],
+            False
+        )
+
+    return bool(left) and bool(right)
+
+
+def _logic_or(left, right):
+    from runtime.matrix import MatrExMatrix
+
+    left_vec = _is_vector(left)
+    right_vec = _is_vector(right)
+
+    if left_vec and right_vec:
+        n = min(len(left.data), len(right.data))
+        return MatrExMatrix(
+            [bool(left.data[i]) or bool(right.data[i]) for i in range(n)],
+            False
+        )
+
+    if left_vec:
+        return MatrExMatrix(
+            [bool(v) or bool(right) for v in left.data],
+            False
+        )
+
+    if right_vec:
+        return MatrExMatrix(
+            [bool(left) or bool(v) for v in right.data],
+            False
+        )
+
+    return bool(left) or bool(right)
+
+
+def _logic_not(value):
+    from runtime.matrix import MatrExMatrix
+
+    if _is_vector(value):
+        return MatrExMatrix(
+            [not bool(v) for v in value.data],
+            False
+        )
+    return not bool(value)
+
+
+# ============================================================
+# ПОЭЛЕМЕНТНАЯ АРИФМЕТИКА
+#
+# ПРАВИЛА:
+#   • скаляр + скаляр        → скаляр
+#   • вектор + скаляр        → вектор
+#   • скаляр + вектор        → вектор
+#   • вектор + вектор        → вектор (min длины)
+#   • матрица + скаляр       → матрица
+#   • матрица + матрица      → матрица (min размеров)
+#   • матрица + вектор       → матрица (вектор по столбцам)
+#
+#   • None в любом операнде  → None в результате
+#   • деление / остаток на 0 → None
+# ============================================================
+
+def _safe_op(a, b, op):
+    """
+    Безопасная операция над двумя скалярами.
+    Возвращает None, если:
+        • a или b — None
+        • деление/остаток/целочисленное деление на 0
+        • тип не подходит
+    """
+    if a is None or b is None:
+        return None
+
+    try:
+        if op == 'PLUS':
+            if isinstance(a, str) or isinstance(b, str):
+                return str(a) + str(b)
+            return a + b
+
+        if op == 'MINUS':
+            if not _is_number(a) or not _is_number(b):
+                return None
+            return a - b
+
+        if op == 'STAR':
+            if isinstance(a, str) and isinstance(b, int):
+                return a * b
+            if isinstance(a, int) and isinstance(b, str):
+                return a * b
+            if not _is_number(a) or not _is_number(b):
+                return None
+            return a * b
+
+        if op == 'SLASH':
+            if not _is_number(a) or not _is_number(b):
+                return None
+            if b == 0:
+                return None
+            return a / b
+
+        if op == 'MOD':
+            if not _is_number(a) or not _is_number(b):
+                return None
+            if b == 0:
+                return None
+            return a % b
+
+        if op == 'POW':
+            if not _is_number(a) or not _is_number(b):
+                return None
+            try:
+                return a ** b
+            except (OverflowError, ValueError):
+                return None
+
+        if op == 'FLOORDIV':
+            if not _is_number(a) or not _is_number(b):
+                return None
+            if b == 0:
+                return None
+            return a // b
+
+    except ZeroDivisionError:
+        return None
+    except (TypeError, ValueError):
+        return None
+
+    return None
+
+
+def _apply_arith(left, right, op):
+    """
+    Универсальный диспетчер арифметики.
+    Работает со скалярами, векторами, матрицами.
+    """
+    from runtime.matrix import MatrExMatrix
+
+    left_vec = _is_vector(left)
+    right_vec = _is_vector(right)
+    left_mat = _is_matrix(left)
+    right_mat = _is_matrix(right)
+
+    # ============================================================
+    # 1. ОБА СКАЛЯРЫ
+    # ============================================================
+    if not (left_vec or right_vec or left_mat or right_mat):
+        return _safe_op(left, right, op)
+
+    # ============================================================
+    # 2. ВЕКТОР ↔ ВЕКТОР
+    # ============================================================
+    if left_vec and right_vec:
+        n = min(len(left.data), len(right.data))
+        result = [_safe_op(left.data[i], right.data[i], op) for i in range(n)]
+        return MatrExMatrix(result, False)
+
+    # ============================================================
+    # 3. ВЕКТОР ↔ СКАЛЯР
+    # ============================================================
+    if left_vec and _is_scalar(right):
+        result = [_safe_op(v, right, op) for v in left.data]
+        return MatrExMatrix(result, False)
+
+    if _is_scalar(left) and right_vec:
+        result = [_safe_op(left, v, op) for v in right.data]
+        return MatrExMatrix(result, False)
+
+    # ============================================================
+    # 4. МАТРИЦА ↔ СКАЛЯР
+    # ============================================================
+    if left_mat and _is_scalar(right):
+        result = []
+        for row in left.data:
+            result.append([_safe_op(v, right, op) for v in row])
+        return MatrExMatrix(result, True)
+
+    if _is_scalar(left) and right_mat:
+        result = []
+        for row in right.data:
+            result.append([_safe_op(left, v, op) for v in row])
+        return MatrExMatrix(result, True)
+
+    # ============================================================
+    # 5. МАТРИЦА ↔ МАТРИЦА
+    # ============================================================
+    if left_mat and right_mat:
+        rows = min(left.rows, right.rows)
+        cols = min(left.cols, right.cols)
+        result = []
+        for i in range(rows):
+            new_row = []
+            for j in range(cols):
+                new_row.append(
+                    _safe_op(left.data[i][j], right.data[i][j], op)
+                )
+            result.append(new_row)
+        return MatrExMatrix(result, True)
+
+    # ============================================================
+    # 6. МАТРИЦА ↔ ВЕКТОР (вектор — по столбцам)
+    # ============================================================
+    if left_mat and right_vec:
+        result = []
+        for i in range(left.rows):
+            row = left.data[i]
+            new_row = []
+            for j in range(left.cols):
+                rv = right.data[j] if j < len(right.data) else None
+                new_row.append(_safe_op(row[j], rv, op))
+            result.append(new_row)
+        return MatrExMatrix(result, True)
+
+    if left_vec and right_mat:
+        result = []
+        for i in range(right.rows):
+            row = right.data[i]
+            new_row = []
+            for j in range(right.cols):
+                lv = left.data[j] if j < len(left.data) else None
+                new_row.append(_safe_op(lv, row[j], op))
+            result.append(new_row)
+        return MatrExMatrix(result, True)
+
+    # ============================================================
+    # 7. Неподдерживаемая комбинация
+    # ============================================================
+    return None
 
 
 # ============================================================
@@ -118,34 +343,28 @@ class BinaryOp(Node):
         # АРИФМЕТИКА
         # ============================================================
         if self.op == 'PLUS':
-            if isinstance(left, str) or isinstance(right, str):
-                return str(left) + str(right)
-            return left + right
+            return _apply_arith(left, right, 'PLUS')
 
         elif self.op == 'MINUS':
-            return left - right
+            return _apply_arith(left, right, 'MINUS')
 
         elif self.op == 'STAR':
-            if isinstance(left, str) and isinstance(right, int):
-                return left * right
-            if isinstance(left, int) and isinstance(right, str):
-                return left * right
-            return left * right
+            return _apply_arith(left, right, 'STAR')
 
         elif self.op == 'SLASH':
-            return left / right if right != 0 else float('inf')
+            return _apply_arith(left, right, 'SLASH')
 
         elif self.op == 'MOD':
-            return left % right
+            return _apply_arith(left, right, 'MOD')
 
         elif self.op == 'POW':
-            return left ** right
+            return _apply_arith(left, right, 'POW')
 
         elif self.op == 'FLOORDIV':
-            return left // right
+            return _apply_arith(left, right, 'FLOORDIV')
 
         # ============================================================
-        # СРАВНЕНИЕ — поэлементно, если есть вектор
+        # СРАВНЕНИЕ
         # ============================================================
         elif self.op == 'EQUALS':
             return _compare(left, right, '==')
@@ -169,10 +388,10 @@ class BinaryOp(Node):
         # ЛОГИКА
         # ============================================================
         elif self.op == 'AND':
-            return left and right
+            return _logic_and(left, right)
 
         elif self.op == 'OR':
-            return left or right
+            return _logic_or(left, right)
 
         else:
             raise RuntimeError(f"Неизвестный оператор: {self.op}")
@@ -193,16 +412,38 @@ class UnaryOp(Node):
         right = self.right.evaluate(env)
         forbid_random(right, "унарная операция")
 
+        # ============================================================
+        # УНАРНЫЙ МИНУС
+        # ============================================================
         if self.op == 'MINUS':
-            return -right
-
-        elif self.op == 'NOT':
-            # Поэлементное отрицание для вектора
             from runtime.matrix import MatrExMatrix
-            if isinstance(right, MatrExMatrix) and not right.is_2d:
-                result = [not v for v in right.data]
+
+            # Скаляр
+            if right is None:
+                return None
+            if _is_number(right):
+                return -right
+
+            # Вектор
+            if _is_vector(right):
+                result = [(-v if _is_number(v) else None) for v in right.data]
                 return MatrExMatrix(result, False)
-            return not right
+
+            # Матрица
+            if _is_matrix(right):
+                result = []
+                for row in right.data:
+                    new_row = [(-v if _is_number(v) else None) for v in row]
+                    result.append(new_row)
+                return MatrExMatrix(result, True)
+
+            return None
+
+        # ============================================================
+        # ЛОГИЧЕСКОЕ НЕ
+        # ============================================================
+        elif self.op == 'NOT':
+            return _logic_not(right)
 
         else:
             raise RuntimeError(f"Неизвестный унарный оператор: {self.op}")

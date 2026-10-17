@@ -6,6 +6,9 @@
 Каждая функция описана в двух языках: RU и EN.
 
 ВАЖНО: этот файл — только данные. Никаких import.
+
+КЛЮЧЕВОЕ СЛОВО 'do' В for И while — ОПЦИОНАЛЬНО.
+    Ошибки FOR_NO_DO и WHILE_NO_DO удалены.
 """
 
 
@@ -16,17 +19,21 @@ RU = {
     'for': {
         'name': 'for',
         'category': 'control',
-        'signature': 'for i = начало to конец [step S] do { ... }',
+        'signature': 'for i = начало to конец [step S] [do] { ... }',
         'description': (
             'Цикл по диапазону.\n'
             '  • Оба конца ВКЛЮЧИТЕЛЬНО.\n'
             '  • Если начало > конца — идём вниз.\n'
             '  • step — опционально (по умолчанию 1).\n'
             '  • step 0 — ошибка.\n'
-            '  • Тело — в фигурных скобках { ... }.'
+            '  • Ключевое слово do — ОПЦИОНАЛЬНО.\n'
+            '  • Тело — в фигурных скобках { ... } или один оператор.'
         ),
         'examples': [
             'for i = 1 to 10 do { print(i) }',
+            'for i = 1 to 10 { print(i) }',
+            'for i = 1 to 10 do print(i)',
+            'for i = 1 to 10 print(i)',
             'for i = 10 to 1 do { print(i) }',
             'for i = 1 to 10 step 2 do { print(i) }',
             'for i = 2 to lenrow(m) do { print(m[i, 1]) }',
@@ -135,21 +142,6 @@ RU = {
                 ],
             },
 
-            'FOR_NO_DO': {
-                'message': "for: после диапазона нужно ключевое слово 'do'.",
-                'wrong': 'for i = 1 to 10 { print(i) }',
-                'right': 'for i = 1 to 10 do { print(i) }',
-                'explanation': (
-                    "Правильная структура:\n"
-                    "  for i = 1 to 10 do { ... }\n"
-                    "                  ^^\n"
-                    "                  тут 'do'"
-                ),
-                'variants': [
-                    'for i = 1 to 10 do { print(i) }',
-                ],
-            },
-
             'FOR_OLD_SYNTAX': {
                 'message': (
                     "for: используется СТАРЫЙ синтаксис.\n"
@@ -160,10 +152,15 @@ RU = {
                 'explanation': (
                     "Синтаксис for изменился:\n"
                     "  БЫЛО:  for i(1:10) { ... }\n"
-                    "  СТАЛО: for i = 1 to 10 do { ... }"
+                    "  СТАЛО: for i = 1 to 10 do { ... }\n"
+                    "\n"
+                    "'do' — опционально:\n"
+                    "  for i = 1 to 10 do { ... }\n"
+                    "  for i = 1 to 10 { ... }"
                 ),
                 'variants': [
                     'for i = 1 to 10 do { print(i) }',
+                    'for i = 1 to 10 { print(i) }',
                 ],
             },
 
@@ -173,10 +170,12 @@ RU = {
                 'right': 'for i = 1 to 10 do { ... }',
                 'explanation': (
                     "Правильно:\n"
-                    "  for i = 1 to 10 do { ... }"
+                    "  for i = 1 to 10 do { ... }\n"
+                    "  for i = 1 to 10 { ... }"
                 ),
                 'variants': [
                     'for i = 1 to 10 do { print(i) }',
+                    'for i = 1 to 10 { print(i) }',
                 ],
             },
 
@@ -230,28 +229,34 @@ RU = {
     'while': {
         'name': 'while',
         'category': 'control',
-        'signature': 'while условие { ... }',
+        'signature': 'while условие [do] { ... }',
         'description': (
             'Цикл с условием.\n'
             '  • Выполняется, пока условие ИСТИННО.\n'
-            '  • Тело — в фигурных скобках { ... }.'
+            '  • Ключевое слово do — ОПЦИОНАЛЬНО.\n'
+            '  • Тело — в фигурных скобках { ... } или один оператор.'
         ),
         'examples': [
+            'i = 1\nwhile i <= 5 do { print(i); i = i + 1 }',
             'i = 1\nwhile i <= 5 { print(i); i = i + 1 }',
+            'i = 1\nwhile i <= 5 do print(i)',
+            'i = 1\nwhile i <= 5 print(i)',
         ],
         'errors': {
             'WHILE_BAD_SYNTAX': {
                 'message': (
                     "while: неверный синтаксис.\n"
-                    "  Формат: while условие { ... }"
+                    "  Формат: while условие [do] { ... }"
                 ),
                 'wrong': 'while { ... }',
-                'right': 'while i <= 5 { print(i); i = i + 1 }',
+                'right': 'while i <= 5 do { print(i); i = i + 1 }',
                 'explanation': (
                     "Правильная структура:\n"
+                    "  while условие do { ... }\n"
                     "  while условие { ... }"
                 ),
                 'variants': [
+                    'i = 1\nwhile i <= 5 do { print(i); i = i + 1 }',
                     'i = 1\nwhile i <= 5 { print(i); i = i + 1 }',
                 ],
             },
@@ -261,15 +266,15 @@ RU = {
                     "while: в условии нужен '==' (сравнение), "
                     "а не '=' (присваивание)."
                 ),
-                'wrong': 'while i = 5 { ... }',
-                'right': 'while i == 5 { ... }',
+                'wrong': 'while i = 5 do { ... }',
+                'right': 'while i == 5 do { ... }',
                 'explanation': (
                     "'=' — присваивание.\n"
                     "'==' — сравнение."
                 ),
                 'variants': [
-                    'while i == 5 { i = i + 1 }',
-                    'while i < 5 { i = i + 1 }',
+                    'while i == 5 do { i = i + 1 }',
+                    'while i < 5 do { i = i + 1 }',
                 ],
             },
 
@@ -283,11 +288,11 @@ RU = {
                     "  В while непонятно, конец ЧЕГО именно.\n"
                     "  Используйте lenrow/lencol/len."
                 ),
-                'wrong': 'while i <= end { ... }',
+                'wrong': 'while i <= end do { ... }',
                 'right': (
-                    'while i <= lenrow(m) { ... }\n'
-                    'while j <= lencol(m) { ... }\n'
-                    'while k <= len(v) { ... }'
+                    'while i <= lenrow(m) do { ... }\n'
+                    'while j <= lencol(m) do { ... }\n'
+                    'while k <= len(v) do { ... }'
                 ),
                 'explanation': (
                     "ВЫБЕРИТЕ ПРАВИЛЬНУЮ ФУНКЦИЮ:\n"
@@ -302,12 +307,12 @@ RU = {
                     "     m[end, :]        — последняя строка"
                 ),
                 'variants': [
-                    'i = 2\nwhile i <= lenrow(m) {\n'
+                    'i = 2\nwhile i <= lenrow(m) do {\n'
                     '    print(m[i, 1])\n'
                     '    i = i + 1\n'
                     '}',
 
-                    'j = 1\nwhile j <= lencol(m) {\n'
+                    'j = 1\nwhile j <= lencol(m) do {\n'
                     '    print(m[1, j])\n'
                     '    j = j + 1\n'
                     '}',
@@ -335,7 +340,7 @@ RU = {
                 'explanation': "break работает только внутри for или while.",
                 'variants': [
                     'for i = 1 to 10 do { break }',
-                    'while true { break }',
+                    'while true do { break }',
                 ],
             },
         },
@@ -378,18 +383,27 @@ RU = {
 
 
 EN = {
+    # ============================================================
+    # FOR
+    # ============================================================
     'for': {
         'name': 'for',
         'category': 'control',
-        'signature': 'for i = start to end [step S] do { ... }',
+        'signature': 'for i = start to end [step S] [do] { ... }',
         'description': (
             'Loop over a range.\n'
             '  • Both ends INCLUSIVE.\n'
             '  • If start > end — goes down.\n'
-            '  • step — optional (default 1).'
+            '  • step — optional (default 1).\n'
+            '  • step 0 — error.\n'
+            '  • Keyword do is OPTIONAL.\n'
+            '  • Body in curly braces { ... } or a single statement.'
         ),
         'examples': [
             'for i = 1 to 10 do { print(i) }',
+            'for i = 1 to 10 { print(i) }',
+            'for i = 1 to 10 do print(i)',
+            'for i = 1 to 10 print(i)',
             'for i = 10 to 1 do { print(i) }',
             'for i = 1 to 10 step 2 do { print(i) }',
         ],
@@ -454,22 +468,21 @@ EN = {
                     'for i = 1 to 10 do { print(i) }',
                 ],
             },
-            'FOR_NO_DO': {
-                'message': "for: keyword 'do' is required after the range.",
-                'wrong': 'for i = 1 to 10 { print(i) }',
-                'right': 'for i = 1 to 10 do { print(i) }',
-                'explanation': "'do' separates the range from the body.",
-                'variants': [
-                    'for i = 1 to 10 do { print(i) }',
-                ],
-            },
             'FOR_OLD_SYNTAX': {
                 'message': "for: OLD syntax is used.",
                 'wrong': 'for i(1:10) { print(i) }',
                 'right': 'for i = 1 to 10 do { print(i) }',
-                'explanation': "WAS: for i(1:10) { ... }\nNOW: for i = 1 to 10 do { ... }",
+                'explanation': (
+                    "WAS: for i(1:10) { ... }\n"
+                    "NOW: for i = 1 to 10 do { ... }\n"
+                    "\n"
+                    "'do' is optional:\n"
+                    "  for i = 1 to 10 do { ... }\n"
+                    "  for i = 1 to 10 { ... }"
+                ),
                 'variants': [
                     'for i = 1 to 10 do { print(i) }',
+                    'for i = 1 to 10 { print(i) }',
                 ],
             },
             'FOR_IN_SYNTAX': {
@@ -479,6 +492,7 @@ EN = {
                 'explanation': "No 'for i in ...' construct.",
                 'variants': [
                     'for i = 1 to 10 do { print(i) }',
+                    'for i = 1 to 10 { print(i) }',
                 ],
             },
             'FOR_NO_STEP': {
@@ -511,31 +525,53 @@ EN = {
         },
     },
 
+    # ============================================================
+    # WHILE
+    # ============================================================
     'while': {
         'name': 'while',
         'category': 'control',
-        'signature': 'while condition { ... }',
-        'description': 'Loop with a condition.',
+        'signature': 'while condition [do] { ... }',
+        'description': (
+            'Loop with a condition.\n'
+            '  • Runs while condition is true.\n'
+            '  • Keyword do is OPTIONAL.\n'
+            '  • Body in curly braces { ... } or a single statement.'
+        ),
         'examples': [
+            'i = 1\nwhile i <= 5 do { print(i); i = i + 1 }',
             'i = 1\nwhile i <= 5 { print(i); i = i + 1 }',
+            'i = 1\nwhile i <= 5 do print(i)',
+            'i = 1\nwhile i <= 5 print(i)',
         ],
         'errors': {
             'WHILE_BAD_SYNTAX': {
-                'message': "while: invalid syntax.",
+                'message': (
+                    "while: invalid syntax.\n"
+                    "  Format: while condition [do] { ... }"
+                ),
                 'wrong': 'while { ... }',
-                'right': 'while i <= 5 { print(i); i = i + 1 }',
-                'explanation': "Format: while condition { ... }",
+                'right': 'while i <= 5 do { print(i); i = i + 1 }',
+                'explanation': (
+                    "Correct structure:\n"
+                    "  while condition do { ... }\n"
+                    "  while condition { ... }"
+                ),
                 'variants': [
+                    'i = 1\nwhile i <= 5 do { print(i); i = i + 1 }',
                     'i = 1\nwhile i <= 5 { print(i); i = i + 1 }',
                 ],
             },
             'WHILE_ASSIGN_IN_CONDITION': {
-                'message': "while: use '==' in the condition, not '='.",
-                'wrong': 'while i = 5 { ... }',
-                'right': 'while i == 5 { ... }',
+                'message': (
+                    "while: use '==' in the condition, not '='."
+                ),
+                'wrong': 'while i = 5 do { ... }',
+                'right': 'while i == 5 do { ... }',
                 'explanation': "'=' — assignment, '==' — comparison.",
                 'variants': [
-                    'while i == 5 { i = i + 1 }',
+                    'while i == 5 do { i = i + 1 }',
+                    'while i < 5 do { i = i + 1 }',
                 ],
             },
             'WHILE_END_KEYWORD': {
@@ -544,11 +580,11 @@ EN = {
                     "in a while loop.\n"
                     "  Use lenrow/lencol/len."
                 ),
-                'wrong': 'while i <= end { ... }',
+                'wrong': 'while i <= end do { ... }',
                 'right': (
-                    'while i <= lenrow(m) { ... }\n'
-                    'while j <= lencol(m) { ... }\n'
-                    'while k <= len(v) { ... }'
+                    'while i <= lenrow(m) do { ... }\n'
+                    'while j <= lencol(m) do { ... }\n'
+                    'while k <= len(v) do { ... }'
                 ),
                 'explanation': (
                     "CHOOSE THE RIGHT FUNCTION:\n"
@@ -558,7 +594,7 @@ EN = {
                     "  len(s)     — length of STRING"
                 ),
                 'variants': [
-                    'i = 2\nwhile i <= lenrow(m) {\n'
+                    'i = 2\nwhile i <= lenrow(m) do {\n'
                     '    print(m[i, 1])\n'
                     '    i = i + 1\n'
                     '}',
@@ -567,6 +603,9 @@ EN = {
         },
     },
 
+    # ============================================================
+    # BREAK
+    # ============================================================
     'break': {
         'name': 'break',
         'category': 'control',
@@ -588,6 +627,9 @@ EN = {
         },
     },
 
+    # ============================================================
+    # TRY / CATCH
+    # ============================================================
     'try': {
         'name': 'try / catch',
         'category': 'control',

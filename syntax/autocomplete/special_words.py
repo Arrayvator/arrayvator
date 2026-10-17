@@ -32,15 +32,15 @@ RU = {
         ),
     },
     'while': {
-        'signature': 'while условие { ... }',
+        'signature': 'while условие do { ... }',
         'description': (
             'Цикл с условием.\n'
             '  • Выполняется, пока условие истинно.\n'
-            '  • Внутри должен быть код, меняющий условие.'
+            '  • После условия обязательно ключевое слово do.'
         ),
         'example': (
             'i = 1\n'
-            'while i <= 5 {\n'
+            'while i <= 5 do {\n'
             '    print(i)\n'
             '    i = i + 1\n'
             '}'
@@ -422,15 +422,15 @@ EN = {
         ),
     },
     'while': {
-        'signature': 'while condition { ... }',
+        'signature': 'while condition do { ... }',
         'description': (
             'Loop with condition.\n'
             '  • Runs while condition is true.\n'
-            '  • There must be code that changes the condition.'
+            '  • Keyword do is required after the condition.'
         ),
         'example': (
             'i = 1\n'
-            'while i <= 5 {\n'
+            'while i <= 5 do {\n'
             '    print(i)\n'
             '    i = i + 1\n'
             '}'

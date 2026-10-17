@@ -24,9 +24,9 @@ SIGNATURES = {
     'while': {
         'name': 'while',
         'category': 'control',
-        'args': ['условие', '{ ... }'],
+        'args': ['условие', 'do', '{ ... }'],
         'examples': [
-            'while i <= 5 { i = i + 1 }',
+            'while i <= 5 do { i = i + 1 }',
         ],
     },
 

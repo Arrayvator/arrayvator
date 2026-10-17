@@ -10,8 +10,19 @@
 
     for i = 1 to 10 do команда
 
+    for i = 1 to 10
+    {
+        команды
+    }
+
+    for i = 1 to 10 команда
+
     for i = 10 to 1 do { ... }         # обратный (шаг -1)
     for i = 1 to 10 step 2 do { ... }  # с шагом
+
+КЛЮЧЕВОЕ СЛОВО 'do' — ОПЦИОНАЛЬНО.
+    • Есть 'do' — съедаем и парсим тело.
+    • Нет 'do' — сразу парсим тело.
 
 ОБА КОНЦА ВКЛЮЧИТЕЛЬНО:
     for i = 1 to 5 do print(i)   # 1 2 3 4 5
@@ -153,7 +164,10 @@ def parse_for(parser):
     Парсит:
         for i = 1 to 10 do { ... }
         for i = 1 to 10 do команда
+        for i = 1 to 10 { ... }
+        for i = 1 to 10 команда
         for i = 1 to 10 step 2 do { ... }
+        for i = 1 to 10 step 2 { ... }
     """
     parser.expect('FOR')
 
@@ -245,14 +259,12 @@ def parse_for(parser):
         step = parser.parse_expression()
 
     # ============================================================
-    # 'do'
+    # 'do' — ОПЦИОНАЛЬНО
     # ============================================================
-    if not parser.check('DO'):
-        raise ArrayVatorError(
-            code="FOR_NO_DO",
-            context=parser._get_context(),
-        )
-    parser.expect('DO')
+    # Если стоит 'do' — съедаем его.
+    # Если нет — сразу парсим тело (блок или один оператор).
+    if parser.check('DO'):
+        parser.expect('DO')
 
     # ============================================================
     # ТЕЛО

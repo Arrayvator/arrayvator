@@ -21,6 +21,11 @@
 
     count() без аргумента — количество строк в группе (или всей таблице).
 
+    ⚠️  ВАЖНО: sum / min / max / avg / count / median / std
+        принимают ТАКЖЕ ВЕКТОР напрямую:
+            sum(v)     min(v)     max(v)     avg(v)
+            count(v)   median(v)  std(v)
+
 РЕАЛИЗАЦИЯ:
     Логика групповой агрегации уже реализована в _CondAggBase
     (см. ast_nodes/functions/conditional_agg.py).
@@ -101,10 +106,58 @@ def _delegate_cond_agg(agg_name, arg, by, env):
 
 
 # ============================================================
+# ХЕЛПЕР: сбор чисел из значения любого типа
+# ============================================================
+def _collect_numbers_std(val):
+    """
+    Собирает все числа из скаляра / вектора / списка / матрицы.
+    bool и None игнорируются.
+    """
+    nums = []
+
+    # Скаляр-число
+    if isinstance(val, (int, float)) and not isinstance(val, bool):
+        nums.append(val)
+        return nums
+
+    # MatrExMatrix (вектор или матрица)
+    if hasattr(val, 'data') and hasattr(val, 'is_2d'):
+        if val.is_2d:
+            for row in val.data:
+                if isinstance(row, list):
+                    for v in row:
+                        if isinstance(v, (int, float)) and not isinstance(v, bool):
+                            nums.append(v)
+        else:
+            for v in val.data:
+                if isinstance(v, (int, float)) and not isinstance(v, bool):
+                    nums.append(v)
+        return nums
+
+    # Обычный список
+    if isinstance(val, list):
+        for v in val:
+            if isinstance(v, (int, float)) and not isinstance(v, bool):
+                nums.append(v)
+        return nums
+
+    return nums
+
+
+# ============================================================
 # STD — собственная реализация
 # ============================================================
 def _evaluate_std(arg, by, env):
-    """Стандартное отклонение (population, делитель N)."""
+    """
+    Стандартное отклонение (population, делитель N).
+
+    Поддерживает:
+        • срез m[:, "X"]           — как было
+        • срез + by m[:, "Y"]      — как было
+        • вектор                   — НОВОЕ
+        • список                   — НОВОЕ
+        • скаляр                   — НОВОЕ (вернёт 0)
+    """
     from ast_nodes.index import IndexNode
     from .conditional_agg import (
         _resolve_column,
@@ -115,16 +168,40 @@ def _evaluate_std(arg, by, env):
     from runtime.matrix import MatrExMatrix
     import math
 
+    # ============================================================
+    # 1. Проверка аргумента
+    # ============================================================
     if arg is None:
         raise TypeError(
-            "std: нужен срез значений.\n"
-            "  Пример: std(m[:, \"Зарплата\"])"
-        )
-    if not isinstance(arg, IndexNode):
-        raise TypeError(
-            "std: аргумент должен быть срезом m[:, \"X\"]."
+            "std: нужен срез значений или вектор.\n"
+            "  Пример: std(m[:, \"Зарплата\"])\n"
+            "  Пример: std(v)"
         )
 
+    # ============================================================
+    # 2. ВЕКТОР / СПИСОК / СКАЛЯР — без by
+    # ============================================================
+    if not isinstance(arg, IndexNode):
+        val = arg.evaluate(env) if hasattr(arg, 'evaluate') else arg
+
+        if by is not None:
+            raise TypeError(
+                "std by: ключ группировки — срез m[:, \"X\"],\n"
+                "  аргумент значения — тоже должен быть срезом."
+            )
+
+        nums = _collect_numbers_std(val)
+
+        if len(nums) < 2:
+            return 0
+
+        mean = sum(nums) / len(nums)
+        var = sum((x - mean) ** 2 for x in nums) / len(nums)
+        return math.sqrt(var)
+
+    # ============================================================
+    # 3. СРЕЗ m[:, "X"] — как было
+    # ============================================================
     matrix_obj = arg.matrix.evaluate(env)
 
     if _is_duckdb(matrix_obj):

@@ -1,6 +1,6 @@
 # parser/dispatch/dates.py
 """
-Даты и время: DATE, DATEDIFF, DATENOW, TIMENOW, TIMESTAMP,
+Даты и время: DATE, DATEDIFF, AGE, DATENOW, TIMENOW, TIMESTAMP,
       YEAR, MONTH, DAY, QUARTER,
       WEEKDAY, WEEKDAYNAME, MONTHNAME,
       ADDDAYS, ADDMONTHS, ADDYEARS, DATETRUNC,
@@ -35,6 +35,13 @@ def dispatch(self, token_type, token, value):
     if token_type == 'DATEDIFF':
         self.pos += 1
         return call_parse(self, 'parse_datediff')
+
+    # ============================================================
+    # AGE — упрощённый DateDiff (формат всегда DD.MM.YYYY)
+    # ============================================================
+    if token_type == 'AGE':
+        self.pos += 1
+        return call_parse(self, 'parse_age')
 
     if token_type == 'DATENOW':
         self.pos += 1

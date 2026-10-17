@@ -299,6 +299,54 @@ MESSAGES = {
         "  Target must be a variable or a matrix cell.",
 
     # ============================================================
+    # INPUTINMATRIX
+    # ============================================================
+    "INPUTINMATRIX_NOT_MATRIX":
+        "InputInMatrix: a 2D matrix is expected.\n"
+        "  The function adds ROWS to a matrix, not to a vector.\n"
+        "\n"
+        "  Example:\n"
+        "     m = [\"Name\", \"Dept\";\n"
+        "          \"Anna\", \"IT\"]\n"
+        "     m = InputInMatrix(m)",
+
+    "INPUTINMATRIX_BAD_TITLE":
+        "InputInMatrix: window title must be a string.\n"
+        "\n"
+        "  Examples:\n"
+        "     ✅  m = InputInMatrix(m)\n"
+        "     ✅  m = InputInMatrix(m, \"Employees\")\n"
+        "     ❌  m = InputInMatrix(m, 42)      ← not a string",
+
+    "INPUTINMATRIX_BAD_PREVIEW":
+        "InputInMatrix: preview row count must be a number >= 0.\n"
+        "\n"
+        "  Examples:\n"
+        "     ✅  m = InputInMatrix(m, \"Employees\", 5)\n"
+        "     ✅  m = InputInMatrix(m, \"Employees\", 20)\n"
+        "     ❌  m = InputInMatrix(m, \"Employees\", \"many\")   ← not a number",
+
+    "INPUTINMATRIX_BAD_ARGS":
+        "InputInMatrix: invalid arguments.\n"
+        "  Expected: InputInMatrix(matrix [, \"Title\" [, count]])\n"
+        "\n"
+        "  Examples:\n"
+        "     ✅  m = InputInMatrix(m)\n"
+        "     ✅  m = InputInMatrix(m, \"Employees\")\n"
+        "     ✅  m = InputInMatrix(m, \"Employees\", 5)",
+
+    "INPUTINMATRIX_REQUIRES_ASSIGNMENT":
+        "InputInMatrix: result must be saved.\n"
+        "  The function returns a NEW matrix with added rows.\n"
+        "  The source matrix is not modified.\n"
+        "\n"
+        "  Correct:\n"
+        "     m = InputInMatrix(m, \"Employees\")\n"
+        "\n"
+        "  Incorrect:\n"
+        "     InputInMatrix(m, \"Employees\")    ← result is lost",
+
+    # ============================================================
     # LOGGING
     # ============================================================
     "LOGTOFILE_BAD_LEVEL":

@@ -35,6 +35,7 @@ from .sqlite import (
 from .logging_nodes import LogToFileNode, LogOffNode
 from .input_show import InputShowNode, InputShowFormNode
 from .input_list_show import InputListShowNode
+from .inputinmatrix import InputInMatrixNode          # ← НОВОЕ
 from .printshow import PrintShowNode
 from .tomatrix import (
     ToMatrixNode, ConvertBigDataToMatrixNode,
@@ -44,6 +45,7 @@ from .deduplicate import (
     UniqueNode, CountDistinctNode, ValueCountsNode, DeleteDuplicateNode,
 )
 from .datediff import DateDiffNode
+from .age import AgeNode
 from .datetime_now import DateNowNode, TimeNowNode
 from .case import CaseNode
 from .null_handling import (
@@ -175,6 +177,7 @@ __all__ = [
     'LogToFileNode', 'LogOffNode',
     # Ввод
     'InputShowNode', 'InputShowFormNode', 'InputListShowNode',
+    'InputInMatrixNode',                              # ← НОВОЕ
     # Печать
     'PrintShowNode',
     # Конвертация
@@ -183,7 +186,7 @@ __all__ = [
     # Дубликаты
     'UniqueNode', 'CountDistinctNode', 'ValueCountsNode', 'DeleteDuplicateNode',
     # Даты
-    'DateDiffNode', 'DateNowNode', 'TimeNowNode', 'DateNode',
+    'DateDiffNode', 'AgeNode', 'DateNowNode', 'TimeNowNode', 'DateNode',
     'YearNode', 'MonthNode', 'DayNode', 'QuarterNode',
     'WeekdayNode', 'WeekdayNameNode', 'MonthNameNode',
     'AddDaysNode', 'AddMonthsNode', 'AddYearsNode', 'DateTruncNode',

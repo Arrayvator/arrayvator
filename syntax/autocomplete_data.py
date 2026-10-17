@@ -88,6 +88,7 @@ def _collect_items():
         'syntax.autocomplete.items_filter',
         'syntax.autocomplete.items_groupby',
         'syntax.autocomplete.items_input',
+        'syntax.autocomplete.items_inputinmatrix',   # ← ДОБАВЛЕНО
         'syntax.autocomplete.items_insert',
         'syntax.autocomplete.items_join',
         'syntax.autocomplete.items_logging',

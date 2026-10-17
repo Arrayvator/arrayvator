@@ -17,7 +17,7 @@
 
     while условие команда
 
-`do` — опционально (для симметрии с for).
+КЛЮЧЕВОЕ СЛОВО 'do' — ОПЦИОНАЛЬНО.
 """
 
 from ast_nodes import Node
@@ -25,36 +25,21 @@ from errors import ArrayVatorError
 from .break_stmt import BreakException
 
 
-# ============================================================
-# ХЕЛПЕР: рекурсивный поиск 'end' в дереве условия
-# ============================================================
 def _contains_bare_end(node):
-    """
-    Рекурсивно ищет чистое 'end' в дереве условия.
-
-    Проверяет:
-      • VariableNode / StringNode с 'end'
-      • BinaryOp — left и right
-      • UnaryOp — right
-
-    Возвращает True, если где-то в дереве найден голый 'end'.
-    """
+    """Рекурсивно ищет чистое 'end' в дереве условия."""
     if node is None:
         return False
 
-    # VariableNode('end')
     if hasattr(node, 'name'):
         name = getattr(node, 'name', '')
         if isinstance(name, str) and name.lower() == 'end':
             return True
 
-    # StringNode('end')
     if hasattr(node, 'value'):
         value = getattr(node, 'value', '')
         if isinstance(value, str) and value.lower() == 'end':
             return True
 
-    # BinaryOp: left и right
     if hasattr(node, 'left'):
         if _contains_bare_end(getattr(node, 'left', None)):
             return True
@@ -86,12 +71,15 @@ def parse_while(parser):
     parser.expect('WHILE')
 
     # ============================================================
-    # ПРОВЕРКА: '=' вместо '==' в условии
+    # УСЛОВИЕ + проверка '=' в условии
     # ============================================================
-    from .if_stmt import _check_assign_in_condition
-    _check_assign_in_condition(parser, "while")
+    from .if_stmt import check_assign_in_range
 
+    cond_start = parser.pos
     condition = parser.parse_expression()
+    cond_end = parser.pos
+
+    check_assign_in_range(parser, cond_start, cond_end, "while")
 
     # ============================================================
     # ПРОВЕРКА: 'end' в while запрещён
@@ -103,7 +91,7 @@ def parse_while(parser):
         )
 
     # ============================================================
-    # ОПЦИОНАЛЬНОЕ 'do'
+    # 'do' — ОПЦИОНАЛЬНО
     # ============================================================
     if parser.check('DO'):
         parser.expect('DO')

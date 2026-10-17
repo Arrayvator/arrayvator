@@ -38,6 +38,25 @@ SIGNATURES = {
         ],
     },
 
+    # ============================================================
+    # INPUTINMATRIX — НОВОЕ
+    # ============================================================
+    'inputinmatrix': {
+        'name': 'InputInMatrix',
+        'category': 'input',
+        'args': [
+            'матрица',
+            '"Заголовок окна" (опц.)',
+            'количество строк контекста (опц., по умолчанию 10)',
+        ],
+        'examples': [
+            'm = InputInMatrix(m)',
+            'm = InputInMatrix(m, "Сотрудники")',
+            'm = InputInMatrix(m, "Сотрудники", 5)',
+            'm = InputInMatrix(m, "Товары", 20)',
+        ],
+    },
+
     'printshow': {
         'name': 'printshow',
         'category': 'output',

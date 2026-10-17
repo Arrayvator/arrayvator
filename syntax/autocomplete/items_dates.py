@@ -1,7 +1,7 @@
 # syntax/autocomplete/items_dates.py
 """
 Описания функций работы с датами и временем:
-date, DateDiff, datenow, timenow, timestamp,
+date, DateDiff, age, datenow, timenow, timestamp,
 year, month, day, quarter,
 weekday, weekdayname, monthname,
 adddays, addmonths, addyears, datetrunc,
@@ -39,13 +39,48 @@ RU = {
         'signature': 'DateDiff(дата1, дата2, "формат", "единица")',
         'description': (
             'Разница между датами/временем.\n'
-            '  • Единицы: seconds, minutes, hours, days, weeks, months, years.'
+            '  • Единицы: seconds, minutes, hours, days, weeks, months, years.\n'
+            '  • Считаются ПОЛНЫЕ прошедшие периоды.\n'
+            '  • Если хотя бы одного дня не хватает — период не полный.'
         ),
         'example': (
             'r = DateDiff("20.06.2024", "25.06.2024", "DD.MM.YYYY", "days")\n'
             'r = DateDiff("10:30", "14:45", "HH:MM", "minutes")'
         ),
     },
+
+    # ============================================================
+    # AGE — упрощённый DateDiff
+    # ============================================================
+    'age': {
+        'signature': 'age(дата1, дата2 [, "единица"])',
+        'description': (
+            'Возраст / стаж между двумя датами.\n'
+            '  • Формат всегда DD.MM.YYYY — указывать не нужно.\n'
+            '  • Единица измерения опциональна.\n'
+            '  • По умолчанию — "years" (полных лет).\n'
+            '  • Считаются ПОЛНЫЕ прошедшие периоды.\n'
+            '  • Если хотя бы одного дня не хватает — период не полный.\n'
+            '\n'
+            'ЕДИНИЦЫ:\n'
+            '  • "years"    — полных лет\n'
+            '  • "months"   — полных месяцев\n'
+            '  • "weeks"    — полных недель\n'
+            '  • "days"     — полных дней\n'
+            '  • "hours"    — полных часов\n'
+            '  • "minutes"  — полных минут\n'
+            '  • "seconds"  — полных секунд\n'
+            '  • "all"      — строка: "5 лет 7 месяцев 1 день"'
+        ),
+        'example': (
+            'r = age("15.03.2021", "16.10.2026")           # 5\n'
+            'r = age("15.03.2021", "16.10.2026", "months") # 67\n'
+            'r = age("15.03.2021", "16.10.2026", "all")    # "5 лет 7 месяцев 1 день"\n'
+            'm[:, "Стаж"] = age(m[:, "Приём"], datenow())\n'
+            'm[:, "Полный"] = age(m[:, "Приём"], datenow(), "all")'
+        ),
+    },
+
     'datenow': {
         'signature': 'datenow([формат])',
         'description': 'Текущая дата.',
@@ -391,13 +426,48 @@ EN = {
         'signature': 'DateDiff(date1, date2, "format", "unit")',
         'description': (
             'Difference between dates/times.\n'
-            '  • Units: seconds, minutes, hours, days, weeks, months, years.'
+            '  • Units: seconds, minutes, hours, days, weeks, months, years.\n'
+            '  • Calculates FULL elapsed periods.\n'
+            '  • If even one day is missing — the period is not full.'
         ),
         'example': (
             'r = DateDiff("06/20/2024", "06/25/2024", "MM/DD/YYYY", "days")\n'
             'r = DateDiff("10:30", "14:45", "HH:MM", "minutes")'
         ),
     },
+
+    # ============================================================
+    # AGE — simplified DateDiff
+    # ============================================================
+    'age': {
+        'signature': 'age(date1, date2 [, "unit"])',
+        'description': (
+            'Age / tenure between two dates.\n'
+            '  • Format is always DD.MM.YYYY — no need to specify.\n'
+            '  • Unit is optional.\n'
+            '  • Default — "years" (full years).\n'
+            '  • Calculates FULL elapsed periods.\n'
+            '  • If even one day is missing — the period is not full.\n'
+            '\n'
+            'UNITS:\n'
+            '  • "years"    — full years\n'
+            '  • "months"   — full months\n'
+            '  • "weeks"    — full weeks\n'
+            '  • "days"     — full days\n'
+            '  • "hours"    — full hours\n'
+            '  • "minutes"  — full minutes\n'
+            '  • "seconds"  — full seconds\n'
+            '  • "all"      — string: "5 years 7 months 1 day"'
+        ),
+        'example': (
+            'r = age("15.03.2021", "16.10.2026")           # 5\n'
+            'r = age("15.03.2021", "16.10.2026", "months") # 67\n'
+            'r = age("15.03.2021", "16.10.2026", "all")    # "5 years 7 months 1 day"\n'
+            'm[:, "Tenure"] = age(m[:, "HireDate"], datenow())\n'
+            'm[:, "Full"] = age(m[:, "HireDate"], datenow(), "all")'
+        ),
+    },
+
     'datenow': {
         'signature': 'datenow([format])',
         'description': 'Current date.',

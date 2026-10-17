@@ -89,6 +89,13 @@ MESSAGES = {
 
     "SYNTAX_IF_NO_THEN":
         "After if condition, keyword 'then' is needed.",
+
+    # ============================================================
+    # WHILE — new syntax
+    # ============================================================
+    "WHILE_NO_DO":
+        "while: keyword 'do' is required after the condition.",
+
     "SYNTAX_ANALYST_REMOVED":
         "Analyst mode REMOVED. Use slice m[:, \"X\"].",
     "SYNTAX_INSERT_MISSING_DIRECTION":

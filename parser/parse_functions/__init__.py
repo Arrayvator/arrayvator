@@ -26,6 +26,7 @@ from .vlookup import parse_vlookup
 from .case import parse_case
 from .deduplicate import parse_deduplicate
 from .datediff import parse_datediff
+from .age import parse_age                        # ← НОВОЕ
 from .date import parse_date
 from .datetime_now import parse_datenow, parse_timenow, parse_timestamp
 
@@ -58,6 +59,7 @@ from .sqlite import parse_sqlite
 from .logging_nodes import parse_logtofile, parse_logoff
 from .input_show import parse_inputshow, parse_inputshowform
 from .input_list_show import parse_inputlistshow
+from .inputinmatrix import parse_inputinmatrix        # ← НОВОЕ
 from .printshow import parse_printshow
 from .tomatrix import (
     parse_to_matrix,
@@ -171,6 +173,7 @@ __all__ = [
     'parse_case',
     'parse_deduplicate',
     'parse_datediff',
+    'parse_age',                                  # ← НОВОЕ
     'parse_date',
     'parse_datenow',
     'parse_timenow',
@@ -212,6 +215,7 @@ __all__ = [
     'parse_inputshow',
     'parse_inputshowform',
     'parse_inputlistshow',
+    'parse_inputinmatrix',                            # ← НОВОЕ
     'parse_printshow',
     'parse_to_matrix',
     'parse_convert_bigdata_to_matrix',

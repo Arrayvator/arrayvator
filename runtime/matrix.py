@@ -1,188 +1,282 @@
 # runtime/matrix.py
+"""
+Класс MatrExMatrix + поэлементная арифметика.
+"""
+
+# ============================================================
+# ХЕЛПЕРЫ
+# ============================================================
+
+def _is_scalar(v):
+    return isinstance(v, (int, float, str, bool)) or v is None
+
+
+def _is_number(v):
+    return isinstance(v, (int, float)) and not isinstance(v, bool)
+
+
+def _apply_elementwise(self, other, op, op_name="+"):
+    """
+    Поэлементное применение операции op к self и other.
+
+    op — функция (a, b) → результат.
+    op_name — для сообщения об ошибке.
+
+    Возвращает НОВЫЙ MatrExMatrix.
+    """
+    # ============================================================
+    # 1. other — скаляр
+    # ============================================================
+    if _is_scalar(other):
+        def fn(v):
+            if v is None or other is None:
+                return None
+            try:
+                return op(v, other)
+            except (TypeError, ValueError, ZeroDivisionError):
+                return None
+
+        if self.is_2d:
+            return MatrExMatrix(
+                [[fn(v) for v in row] for row in self.data],
+                True
+            )
+        return MatrExMatrix([fn(v) for v in self.data], False)
+
+    # ============================================================
+    # 2. other — MatrExMatrix
+    # ============================================================
+    if isinstance(other, MatrExMatrix):
+        # 2.1. Оба 1D
+        if not self.is_2d and not other.is_2d:
+            if len(self.data) != len(other.data):
+                raise ValueError(
+                    f"Операция '{op_name}': нельзя работать с векторами "
+                    f"разной длины ({len(self.data)} и {len(other.data)})."
+                )
+            result = []
+            for a, b in zip(self.data, other.data):
+                if a is None or b is None:
+                    result.append(None)
+                    continue
+                try:
+                    result.append(op(a, b))
+                except (TypeError, ValueError, ZeroDivisionError):
+                    result.append(None)
+            return MatrExMatrix(result, False)
+
+        # 2.2. Оба 2D
+        if self.is_2d and other.is_2d:
+            if self.rows != other.rows or self.cols != other.cols:
+                raise ValueError(
+                    f"Операция '{op_name}': нельзя работать с матрицами "
+                    f"разных размеров "
+                    f"({self.rows}×{self.cols} и "
+                    f"{other.rows}×{other.cols})."
+                )
+            result = []
+            for i in range(self.rows):
+                row = []
+                for j in range(self.cols):
+                    a = self.data[i][j]
+                    b = other.data[i][j]
+                    if a is None or b is None:
+                        row.append(None)
+                        continue
+                    try:
+                        row.append(op(a, b))
+                    except (TypeError, ValueError, ZeroDivisionError):
+                        row.append(None)
+                result.append(row)
+            return MatrExMatrix(result, True)
+
+        # 2.3. Смешанные
+        raise TypeError(
+            f"Операция '{op_name}': нельзя смешивать вектор и матрицу.\n"
+            f"  Слева: {'матрица' if self.is_2d else 'вектор'}\n"
+            f"  Справа: {'матрица' if other.is_2d else 'вектор'}"
+        )
+
+    # ============================================================
+    # 3. other — list
+    # ============================================================
+    if isinstance(other, list):
+        if other and isinstance(other[0], list):
+            return _apply_elementwise(
+                self, MatrExMatrix(other, True), op, op_name
+            )
+        return _apply_elementwise(
+            self, MatrExMatrix(other, False), op, op_name
+        )
+
+    # ============================================================
+    # 4. Несовместимый тип
+    # ============================================================
+    raise TypeError(
+        f"Операция '{op_name}': несовместимый тип {type(other).__name__}."
+    )
+
+
+# ============================================================
+# КЛАСС
+# ============================================================
+
 class MatrExMatrix:
     def __init__(self, data, is_2d=False):
-        if not isinstance(data, list):
-            raise TypeError("Матрица должна быть списком")
         self.data = data
-        self.rows = len(data)
         self.is_2d = is_2d
-        
-        # Проверяем, является ли это 2D матрицей
-        if is_2d or (data and isinstance(data[0], list)):
-            self.is_2d = True
-            # Находим максимальную длину строки
-            max_cols = 0
-            for row in data:
-                if isinstance(row, list):
-                    if len(row) > max_cols:
-                        max_cols = len(row)
-                else:
-                    if 1 > max_cols:
-                        max_cols = 1
-            # Выравниваем все строки
-            for i in range(len(data)):
-                if not isinstance(data[i], list):
-                    data[i] = [data[i]]
-                while len(data[i]) < max_cols:
-                    data[i].append(None)
-            self.cols = max_cols
-        else:
-            self.is_2d = False
-            self.cols = 1
-            # Убеждаемся, что все элементы не являются списками
-            for i in range(len(data)):
-                if isinstance(data[i], list):
-                    data[i] = data[i][0] if data[i] else None
-    
-    def __str__(self):
-        if self.rows == 0:
-            return "[]"
-        
-        # ============================================================
-        # ВЕКТОР (1D)
-        # ============================================================
-        if not self.is_2d:
-            result = "["
-            items = []
-            for x in self.data:
-                if x is None:
-                    items.append("None")
-                else:
-                    items.append(str(x))
-            result += ", ".join(items) + "]"
-            return result
-        
-        # ============================================================
-        # 2D МАТРИЦА — красивое выравнивание
-        # ============================================================
-        
-        # Приводим все значения к строкам
-        display_data = []
-        for i in range(self.rows):
-            row = []
-            for j in range(self.cols):
-                if i < len(self.data) and j < len(self.data[i]):
-                    val = self.data[i][j]
-                    if val is None:
-                        row.append("None")
-                    else:
-                        row.append(str(val))
-                else:
-                    row.append("None")
-            display_data.append(row)
-        
-        # ============================================================
-        # ОПРЕДЕЛЯЕМ ШИРИНУ СТОЛБЦОВ
-        # ============================================================
-        col_widths = []
-        for j in range(self.cols):
-            max_width = 0
-            for i in range(self.rows):
-                val = display_data[i][j] if j < len(display_data[i]) else "None"
-                if len(val) > max_width:
-                    max_width = len(val)
-            # Минимум 4 символа
-            col_widths.append(max(4, max_width))
-        
-        # ============================================================
-        # ОПРЕДЕЛЯЕМ ВЫРАВНИВАНИЕ ДЛЯ КАЖДОГО СТОЛБЦА
-        # ============================================================
-        # Логика:
-        #   - Если в столбце есть строки → влево (<)
-        #   - Если только числа (int/float) → вправо (>)
-        #   - None игнорируется при определении
-        # ============================================================
-        col_aligns = []
-        for j in range(self.cols):
-            has_string = False
-            has_number = False
-            
-            for i in range(self.rows):
-                if i < len(self.data) and j < len(self.data[i]):
-                    val = self.data[i][j]
-                    if val is None:
-                        continue
-                    if isinstance(val, str):
-                        has_string = True
-                    elif isinstance(val, (int, float)):
-                        has_number = True
-            
-            # Если в столбце есть строки — влево
-            # Если только числа — вправо
-            if has_string:
-                col_aligns.append('<')   # влево
-            elif has_number:
-                col_aligns.append('>')   # вправо
-            else:
-                col_aligns.append('<')   # по умолчанию влево
-        
-        # ============================================================
-        # ФОРМИРУЕМ СТРОКИ
-        # ============================================================
-        result = []
-        
-        for i in range(self.rows):
-            row = display_data[i]
-            row_parts = []
-            
-            for j in range(self.cols):
-                val = row[j] if j < len(row) else "None"
-                align = col_aligns[j]
-                width = col_widths[j]
-                
-                if align == '>':
-                    row_parts.append(f"{val:>{width}}")
-                elif align == '^':
-                    row_parts.append(f"{val:^{width}}")
-                else:  # '<'
-                    row_parts.append(f"{val:<{width}}")
-            
-            # Разделитель между столбцами — двойной пробел
-            result.append("  ".join(row_parts))
-        
-        return "\n".join(result)
-    
+        self.rows = len(data) if is_2d else (1 if data else 0)
+        self.cols = len(data[0]) if (is_2d and data) else (len(data) if not is_2d else 0)
+
+    def replace_data(self, new_data, is_2d):
+        self.data = new_data
+        self.is_2d = is_2d
+        self.rows = len(new_data) if is_2d else (1 if new_data else 0)
+        self.cols = len(new_data[0]) if (is_2d and new_data) else (len(new_data) if not is_2d else 0)
+
     def __repr__(self):
-        return self.__str__()
-    
-    def __len__(self):
-        return self.rows
-    
-    def sum(self):
-        if self.rows == 0:
-            return 0
-        if not self.is_2d:
-            total = 0
-            for val in self.data:
-                if isinstance(val, (int, float)):
-                    total += val
-            return total
-        total = 0
-        for row in self.data:
-            for val in row:
-                if isinstance(val, (int, float)):
-                    total += val
-        return total
-    
+        if self.is_2d:
+            return f"MatrExMatrix({self.data}, 2D)"
+        return f"MatrExMatrix({self.data})"
+
     # ============================================================
-    # НОВЫЕ МЕТОДЫ для поддержки random()
+    # АРИФМЕТИКА
     # ============================================================
-    
-    def is_empty(self):
-        """Пустая матрица или вектор"""
-        return self.rows == 0
-    
-    def replace_data(self, new_data, is_2d=None):
-        """
-        Заменяет данные матрицы НА МЕСТЕ (сохраняя ссылку на объект).
-        Нужно для случая m = random(...) — мы меняем существующий объект,
-        чтобы все ссылки на него (в env, в других переменных) увидели новые данные.
-        """
-        if is_2d is None:
-            is_2d = self.is_2d
-        
-        tmp = MatrExMatrix(new_data, is_2d)
-        self.data = tmp.data
-        self.rows = tmp.rows
-        self.cols = tmp.cols
-        self.is_2d = tmp.is_2d
+
+    def __add__(self, other):
+        return _apply_elementwise(self, other, lambda a, b: a + b, "+")
+
+    def __radd__(self, other):
+        return _apply_elementwise(self, other, lambda a, b: b + a, "+")
+
+    def __sub__(self, other):
+        return _apply_elementwise(self, other, lambda a, b: a - b, "-")
+
+    def __rsub__(self, other):
+        return _apply_elementwise(self, other, lambda a, b: b - a, "-")
+
+    def __mul__(self, other):
+        return _apply_elementwise(self, other, lambda a, b: a * b, "*")
+
+    def __rmul__(self, other):
+        return _apply_elementwise(self, other, lambda a, b: b * a, "*")
+
+    def __truediv__(self, other):
+        return _apply_elementwise(
+            self, other,
+            lambda a, b: (a / b) if b != 0 else None,
+            "/"
+        )
+
+    def __rtruediv__(self, other):
+        return _apply_elementwise(
+            self, other,
+            lambda a, b: (b / a) if a != 0 else None,
+            "/"
+        )
+
+    def __mod__(self, other):
+        return _apply_elementwise(
+            self, other,
+            lambda a, b: (a % b) if b != 0 else None,
+            "%"
+        )
+
+    def __rmod__(self, other):
+        return _apply_elementwise(
+            self, other,
+            lambda a, b: (b % a) if a != 0 else None,
+            "%"
+        )
+
+    def __pow__(self, other):
+        return _apply_elementwise(self, other, lambda a, b: a ** b, "**")
+
+    def __rpow__(self, other):
+        return _apply_elementwise(self, other, lambda a, b: b ** a, "**")
+
+    def __floordiv__(self, other):
+        return _apply_elementwise(
+            self, other,
+            lambda a, b: (a // b) if b != 0 else None,
+            "//"
+        )
+
+    def __rfloordiv__(self, other):
+        return _apply_elementwise(
+            self, other,
+            lambda a, b: (b // a) if a != 0 else None,
+            "//"
+        )
+
+    def __neg__(self):
+        if self.is_2d:
+            return MatrExMatrix(
+                [[-v if _is_number(v) else v for v in row]
+                 for row in self.data],
+                True
+            )
+        return MatrExMatrix(
+            [-v if _is_number(v) else v for v in self.data],
+            False
+        )
+
+    def __pos__(self):
+        return self
+
+    # ============================================================
+    # ЛОГИКА (поэлементно)
+    # ============================================================
+
+    def __and__(self, other):
+        return _apply_elementwise(
+            self, other,
+            lambda a, b: bool(a) and bool(b),
+            "and"
+        )
+
+    def __rand__(self, other):
+        return _apply_elementwise(
+            self, other,
+            lambda a, b: bool(b) and bool(a),
+            "and"
+        )
+
+    def __or__(self, other):
+        return _apply_elementwise(
+            self, other,
+            lambda a, b: bool(a) or bool(b),
+            "or"
+        )
+
+    def __ror__(self, other):
+        return _apply_elementwise(
+            self, other,
+            lambda a, b: bool(b) or bool(a),
+            "or"
+        )
+
+    # ============================================================
+    # СРАВНЕНИЯ (поэлементно)
+    # ============================================================
+
+    def __eq__(self, other):
+        return _apply_elementwise(self, other, lambda a, b: a == b, "==")
+
+    def __ne__(self, other):
+        return _apply_elementwise(self, other, lambda a, b: a != b, "!=")
+
+    def __lt__(self, other):
+        return _apply_elementwise(self, other, lambda a, b: a < b, "<")
+
+    def __le__(self, other):
+        return _apply_elementwise(self, other, lambda a, b: a <= b, "<=")
+
+    def __gt__(self, other):
+        return _apply_elementwise(self, other, lambda a, b: a > b, ">")
+
+    def __ge__(self, other):
+        return _apply_elementwise(self, other, lambda a, b: a >= b, ">=")
+
+    # __hash__ нужен, если переопределён __eq__
+    __hash__ = None

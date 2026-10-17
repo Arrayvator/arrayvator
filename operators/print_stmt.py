@@ -4,25 +4,94 @@ from runtime.random_source import forbid_random
 
 
 # ============================================================
-# ФОРМАТИРОВАНИЕ
+# ФОРМАТИРОВАНИЕ СКАЛЯРА
 # ============================================================
 def _format_scalar(val):
+    """
+    Форматирует одно значение.
+
+    Правила:
+        • None              → "None"
+        • float             → до 4 знаков, с отбрасыванием хвоста
+                              (33.3333333 → "33.3333", 2.5 → "2.5", 2.0 → "2.0")
+        • MatrExMatrix 2D   → таблица
+        • MatrExMatrix 1D   → "1 2 3"
+        • всё остальное     → str(val)
+    """
     if val is None:
         return "None"
+
+    # ---------- МАТРИЦА (2D) ----------
+    if _is_matrix(val):
+        return _format_matrix_table(_get_items(val))
+
+    # ---------- ВЕКТОР (1D) ----------
+    if _is_vector(val):
+        return _format_vector_inline(_get_items(val))
+
+    # ---------- FLOAT ----------
+    if isinstance(val, float):
+        return _format_float(val)
+
+    # ---------- ВСЁ ОСТАЛЬНОЕ ----------
     return str(val)
 
 
+# ============================================================
+# ФОРМАТИРОВАНИЕ FLOAT
+# ============================================================
+def _format_float(val):
+    """
+    Округляет float до 4 знаков и убирает лишние нули.
+
+    Примеры:
+        33.333333333333336  → "33.3333"
+        2.5                 → "2.5"
+        2.0                 → "2.0"
+        0.16666666666666666 → "0.1667"
+        1.4907123456        → "1.4907"
+        100.0               → "100.0"
+    """
+    # NaN и inf — особые случаи
+    if val != val:                     # NaN
+        return "None"
+    if val == float('inf'):
+        return "inf"
+    if val == float('-inf'):
+        return "-inf"
+
+    # Округляем до 4 знаков
+    rounded = round(val, 4)
+
+    # Если после округления получилось целое — оставляем .0
+    if rounded == int(rounded):
+        return f"{int(rounded)}.0"
+
+    # Иначе — убираем хвостовые нули
+    # f"{rounded:.4f}" → "33.3300", потом .rstrip('0') → "33.33"
+    s = f"{rounded:.4f}".rstrip('0').rstrip('.')
+    return s
+
+
+# ============================================================
+# ВЕКТОР → "1 2 3"
+# ============================================================
 def _format_vector_inline(items):
     """Вектор → '1 2 3' (через пробел)."""
     parts = []
     for v in items:
         if v is None:
             parts.append("None")
+        elif isinstance(v, float):
+            parts.append(_format_float(v))
         else:
             parts.append(str(v))
     return " ".join(parts)
 
 
+# ============================================================
+# МАТРИЦА → таблица с выравниванием
+# ============================================================
 def _format_matrix_table(rows):
     """Матрица → таблица с выравниванием колонок."""
     if not rows:
@@ -33,7 +102,7 @@ def _format_matrix_table(rows):
         if not isinstance(row, list):
             row = [row]
         display.append([
-            "None" if c is None else str(c)
+            _format_cell(c)
             for c in row
         ])
 
@@ -84,6 +153,18 @@ def _format_matrix_table(rows):
     return "\n".join(lines)
 
 
+def _format_cell(val):
+    """Форматирует одну ячейку таблицы."""
+    if val is None:
+        return "None"
+    if isinstance(val, float):
+        return _format_float(val)
+    return str(val)
+
+
+# ============================================================
+# ХЕЛПЕРЫ ТИПОВ
+# ============================================================
 def _is_matrix(val):
     if hasattr(val, 'data') and hasattr(val, 'is_2d'):
         return val.is_2d

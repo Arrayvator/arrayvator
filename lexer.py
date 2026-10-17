@@ -58,10 +58,11 @@ class Lexer:
             (r'(?i)\bprint\b', 'PRINT'),
             (r'(?i)\bprintln\b', 'PRINTLN'),
             (r'(?i)\bprintshow\b', 'PRINT_SHOW'),
+            (r'(?i)\binputinmatrix\b', 'INPUTINMATRIX'),
+            (r'(?i)\binputlistshow\b', 'INPUTLISTSHOW'),
+            (r'(?i)\binputshowform\b', 'INPUTSHOWFORM'),
+            (r'(?i)\binputshow\b', 'INPUTSHOW'),
             (r'(?i)\binput\b', 'INPUT'),
-            (r'(?i)\bInputListShow\b', 'INPUTLISTSHOW'),
-            (r'(?i)\bInputShowForm\b', 'INPUTSHOWFORM'),
-            (r'(?i)\bInputShow\b', 'INPUTSHOW'),
 
             # ============================================================
             # ЛОГИРОВАНИЕ
@@ -76,15 +77,14 @@ class Lexer:
             (r'(?i)\bcalendar\b', 'CALENDAR'),
 
             # ============================================================
-            # ДАТЫ — извлечение
+            # ДАТЫ (старые)
             # ============================================================
-            (r'(?i)\bweekdayname\b', 'WEEKDAYNAME'),
-            (r'(?i)\bmonthname\b', 'MONTHNAME'),
-            (r'(?i)\bweekday\b', 'WEEKDAY'),
-            (r'(?i)\bquarter\b', 'QUARTER'),
-            (r'(?i)\byear\b', 'YEAR'),
-            (r'(?i)\bmonth\b', 'MONTH'),
-            (r'(?i)\bday\b', 'DAY'),
+            (r'(?i)\bDateNow\b', 'DATENOW'),
+            (r'(?i)\bTimeNow\b', 'TIMENOW'),
+            (r'(?i)\bDateDiff\b', 'DATEDIFF'),
+            (r'(?i)\bdate\b', 'DATE'),
+            (r'(?i)\bdatediff\b', 'DATEDIFF'),
+            (r'(?i)\bage\b', 'AGE'),
 
             # ============================================================
             # ВРЕМЯ — арифметика (ДО adddays!)
@@ -616,7 +616,7 @@ class Lexer:
                             'NONE_IF',
                             'BANNED_NAN', 'BANNED_NULL',
                             'END_PLUS', 'END_MINUS',
-                            'DATENOW', 'TIMENOW', 'DATEDIFF',
+                            'DATENOW', 'TIMENOW', 'DATEDIFF', 'AGE',
                             'DELETETEXTLEFT', 'DELETETEXTRIGHT',
                             'TRIM', 'TRIMLEFT', 'TRIMRIGHT',
                             'OPENCSV', 'SAVECSV',
@@ -627,6 +627,7 @@ class Lexer:
                             'OPENSQLITE', 'SAVESQLITE',
                             'QUERYSQLITE',
                             'OPENSQLITESHOW', 'SAVESQLITESHOW',
+                            'INPUTINMATRIX',
                             'INPUTSHOW', 'INPUTSHOWFORM',
                             'INPUTLISTSHOW',
                             'BIGDATA', 'TABLE',

@@ -21,68 +21,49 @@ class IfNode(Node):
         return f"If({self.condition}, then={self.then_body}, else={self.else_body})"
 
 
-def _check_assign_in_condition(parser, func_name="if"):
+def check_assign_in_range(parser, start_pos, end_pos, func_name="if"):
     """
-    Проверяет, что в условии нет '=' (присваивания).
-    Должно быть '==' (сравнение).
+    Проверяет, что в диапазоне токенов [start_pos, end_pos)
+    И в первом токене сразу после условия нет ASSIGN ('=').
 
-    Вызывается ДО parse_expression, иначе '=' уже не будет виден.
+    Вызывается ПОСЛЕ parse_expression — когда уже известно,
+    где заканчивается условие.
 
     Бросает:
-        IF_ASSIGN_IN_CONDITION   — для if
+        IF_ASSIGN_IN_CONDITION    — для if
         WHILE_ASSIGN_IN_CONDITION — для while
     """
-    save_pos = parser.pos
-    condition_tokens = []
+    code = ("WHILE_ASSIGN_IN_CONDITION" if func_name == "while"
+            else "IF_ASSIGN_IN_CONDITION")
 
-    depth = 0
-    while parser.peek():
-        token = parser.peek()
-
-        if token[0] == 'LPAREN':
-            depth += 1
-        elif token[0] == 'RPAREN':
-            if depth == 0:
-                break
-            depth -= 1
-        elif token[0] == 'THEN' and depth == 0:
+    # ---- 1. Внутри условия ----
+    for i in range(start_pos, end_pos):
+        if i >= len(parser.tokens):
             break
-        elif token[0] == 'LBRACE' and depth == 0:
-            break
-
-        condition_tokens.append(token)
-        parser.pos += 1
-
-    parser.pos = save_pos
-
-    # Ищем ASSIGN (=)
-    for token in condition_tokens:
+        token = parser.tokens[i]
         if token[0] == 'ASSIGN':
             ctx = parser._get_context(token)
+            raise ArrayVatorError(code=code, context=ctx)
 
-            if func_name == 'while':
-                code = "WHILE_ASSIGN_IN_CONDITION"
-            else:
-                code = "IF_ASSIGN_IN_CONDITION"
-
-            raise ArrayVatorError(
-                code=code,
-                context=ctx,
-            )
+    # ---- 2. Первый токен сразу после условия ----
+    if end_pos < len(parser.tokens):
+        next_token = parser.tokens[end_pos]
+        if next_token[0] == 'ASSIGN':
+            ctx = parser._get_context(next_token)
+            raise ArrayVatorError(code=code, context=ctx)
 
 
 def parse_if(parser):
     parser.expect('IF')
 
     # ============================================================
-    # ПРОВЕРКА: '=' вместо '==' в условии
+    # УСЛОВИЕ + проверка '=' в условии
     # ============================================================
-    _check_assign_in_condition(parser, "if")
-
-    # ============================================================
-    # УСЛОВИЕ
-    # ============================================================
+    cond_start = parser.pos
     condition = parser.parse_expression()
+    cond_end = parser.pos
+
+    check_assign_in_range(parser, cond_start, cond_end, "if")
 
     # ============================================================
     # ПРОВЕРКА: 'then' после условия
