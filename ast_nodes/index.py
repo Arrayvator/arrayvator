@@ -5,6 +5,21 @@ from runtime.random_source import forbid_random
 
 
 # ============================================================
+# ХЕЛПЕР: число → строка (10044.0 → "10044")
+# ============================================================
+def _num_to_str(v):
+    if isinstance(v, bool):
+        return str(v)
+    if isinstance(v, int):
+        return str(v)
+    if isinstance(v, float):
+        if v.is_integer():
+            return str(int(v))
+        return str(v)
+    return str(v)
+
+
+# ============================================================
 # ХЕЛПЕРЫ ДЛЯ DUCKDB
 # ============================================================
 def _is_duckdb(val):
@@ -16,21 +31,18 @@ def _is_duckdb(val):
 
 
 def _is_row_all(spec):
-    """Проверяет, что спецификация — : или all."""
     if isinstance(spec, str):
         return spec.strip().lower() in (':', 'all')
     return False
 
 
 def _is_col_all(spec):
-    """Проверяет, что спецификация — : или all."""
     if isinstance(spec, str):
         return spec.strip().lower() in (':', 'all')
     return False
 
 
 def _resolve_row_number(spec, total_rows):
-    """Преобразует спецификацию строки в 1-based номер."""
     if isinstance(spec, (int, float)):
         return int(spec)
 
@@ -54,7 +66,6 @@ def _resolve_row_number(spec, total_rows):
 
 
 def _find_column_name(columns, spec):
-    """Ищет имя столбца по спецификации (имя или номер)."""
     if isinstance(spec, (int, float)):
         n = int(spec)
         if 1 <= n <= len(columns):
@@ -83,7 +94,6 @@ def _find_column_name(columns, spec):
             except ValueError:
                 pass
 
-        # По имени
         for c in columns:
             if str(c).lower().strip() == s:
                 return c
@@ -95,9 +105,11 @@ def _find_column_name(columns, spec):
 # INDEX NODE
 # ============================================================
 class IndexNode(Node):
-    def __init__(self, matrix, indices):
+    def __init__(self, matrix, indices, inside=False, ignore=False):
         self.matrix = matrix
         self.indices = indices
+        self.inside = inside      # поиск по имени строки/столбца — подстрока
+        self.ignore = ignore      # без учёта регистра
 
     def _parse_range(self, range_str, max_val):
         parts = range_str.split(':')
@@ -421,6 +433,69 @@ class IndexNode(Node):
         raise TypeError(f"Неверный индекс: {idx}")
 
     # ============================================================
+    # ХЕЛПЕР: поиск строки по имени (с учётом inside/ignore)
+    # ============================================================
+    def _find_row_by_name(self, matrix_obj, name):
+        """
+        Возвращает список 1-based номеров строк, где первый столбец
+        совпадает (или содержит) name.
+
+        • inside=False → точное совпадение
+        • inside=True  → подстрока
+        • ignore=True  → без учёта регистра
+        """
+        name_str = str(name)
+        needle = name_str.lower() if self.ignore else name_str
+
+        matches = []
+        for i in range(matrix_obj.rows):
+            if i >= len(matrix_obj.data):
+                break
+            row = matrix_obj.data[i]
+            if not row:
+                continue
+            cell = row[0]
+            if cell is None:
+                continue
+            cell_s = str(cell)
+            hay = cell_s.lower() if self.ignore else cell_s
+            if self.inside:
+                if needle in hay:
+                    matches.append(i + 1)
+            else:
+                if hay == needle:
+                    matches.append(i + 1)
+        return matches
+
+    # ============================================================
+    # ХЕЛПЕР: поиск столбца по имени (с учётом inside/ignore)
+    # ============================================================
+    def _find_columns_by_name(self, matrix_obj, name):
+        """
+        Возвращает список 1-based номеров столбцов, где заголовок
+        совпадает (или содержит) name.
+        """
+        if matrix_obj.rows == 0:
+            return []
+        headers = matrix_obj.data[0]
+        name_str = str(name)
+        needle = name_str.lower() if self.ignore else name_str
+
+        matches = []
+        for j, h in enumerate(headers):
+            if h is None:
+                continue
+            h_s = str(h)
+            hay = h_s.lower() if self.ignore else h_s
+            if self.inside:
+                if needle in hay:
+                    matches.append(j + 1)
+            else:
+                if hay == needle:
+                    matches.append(j + 1)
+        return matches
+
+    # ============================================================
     # MATRIX: 2 индекса
     # ============================================================
     def _evaluate_double(self, matrix_obj, row, col):
@@ -430,7 +505,7 @@ class IndexNode(Node):
         row_start = None
         row_end = None
         row_name = None
-        row_is_name = False    # ← НОВОЕ: строка найдена по имени
+        row_is_name = False
 
         if row_processed == 'all' or row == 'all':
             row_kind = 'all'
@@ -446,19 +521,34 @@ class IndexNode(Node):
             row_kind = 'range'
             row_start, row_end = self._parse_range(row_processed, matrix_obj.rows)
         elif isinstance(row_processed, str):
-            row_kind = 'name'
-            row_name = row_processed
-            row_is_name = True
+            # ── поиск по имени строки (inside/ignore) ──
+            matches = self._find_row_by_name(matrix_obj, row_processed)
+            if not matches:
+                # не нашли — ведём себя как раньше: kind='all'
+                # (это позволяет m["нет_такой", :] не падать, а вернуть всю матрицу;
+                #  исторически так было — сохраняем совместимость)
+                row_kind = 'all'
+            elif len(matches) == 1:
+                row_kind = 'single'
+                row_start = matches[0]
+                row_end = matches[0]
+                row_is_name = True
+            else:
+                row_kind = 'range'
+                row_start = matches[0]
+                row_end = matches[-1]
+                row_is_name = True
         else:
             row_kind = 'all'
 
+        # ── col_processed ──
         col_processed = self._process_special_index(col, matrix_obj.cols) if isinstance(col, str) else col
 
         col_kind = None
         col_start = None
         col_end = None
         col_name = None
-        col_is_name = False    # ← НОВОЕ: столбец найден по имени
+        col_is_name = False
 
         if col_processed == 'all' or col == 'all':
             col_kind = 'all'
@@ -474,18 +564,24 @@ class IndexNode(Node):
             col_kind = 'range'
             col_start, col_end = self._parse_range(col_processed, matrix_obj.cols)
         elif isinstance(col_processed, str):
-            headers = matrix_obj.data[0] if matrix_obj.rows > 0 else []
-            headers_lower = [str(h).lower() if h is not None else None for h in headers]
-            if col_processed.lower() in headers_lower:
-                col_kind = 'single'
-                col_start = headers_lower.index(col_processed.lower()) + 1
-                col_end = col_start
-                col_is_name = True    # ← НОВОЕ: столбец найден по имени
-            else:
+            # ── поиск столбца по имени (inside/ignore) ──
+            matches = self._find_columns_by_name(matrix_obj, col_processed)
+            if not matches:
                 col_kind = 'all'
+            elif len(matches) == 1:
+                col_kind = 'single'
+                col_start = matches[0]
+                col_end = matches[0]
+                col_is_name = True
+            else:
+                col_kind = 'range'
+                col_start = matches[0]
+                col_end = matches[-1]
+                col_is_name = True
         else:
             col_kind = 'all'
 
+        # ── нормализация границ ──
         if row_kind == 'all':
             r_start = 1
             r_end = matrix_obj.rows
@@ -496,17 +592,9 @@ class IndexNode(Node):
             r_start = row_start
             r_end = row_end
         elif row_kind == 'name':
-            r_start = None
-            r_end = None
-            for i in range(matrix_obj.rows):
-                if i < len(matrix_obj.data) and len(matrix_obj.data[i]) > 0:
-                    cell = matrix_obj.data[i][0]
-                    if cell is not None and str(cell).lower() == row_name.lower():
-                        r_start = i + 1
-                        r_end = i + 1
-                        break
-            if r_start is None:
-                return None
+            # устаревшая ветка (не используется после рефакторинга)
+            r_start = 1
+            r_end = matrix_obj.rows
         else:
             r_start = 1
             r_end = matrix_obj.rows
@@ -554,7 +642,6 @@ class IndexNode(Node):
             c_idx = c_start - 1
             result = []
 
-            # ВАЖНО: если столбец найден ПО ИМЕНИ — пропускаем заголовок
             start_row = 1 if col_is_name else 0
 
             for i in range(start_row, matrix_obj.rows):
@@ -584,7 +671,6 @@ class IndexNode(Node):
             c_idx = c_start - 1
             result = []
 
-            # ВАЖНО: если столбец найден ПО ИМЕНИ — начинаем со строки 1
             start_row = r_start - 1
             if col_is_name and start_row == 0:
                 start_row = 1
@@ -621,7 +707,6 @@ class IndexNode(Node):
         # ============================================================
         result = []
 
-        # ВАЖНО: если столбец найден ПО ИМЕНИ — пропускаем заголовок
         start_row = r_start - 1
         if col_is_name and start_row == 0:
             start_row = 1

@@ -2,8 +2,7 @@
 """
 Парсинг DELETE и DELETEIF (только программист).
 
-СИНТАКСИС:
-    # DELETE:
+СИНТАКСИС DELETE:
     delete(s[2, :])
     delete(s[10:end, :])
     delete(s[last 3, :])
@@ -14,12 +13,18 @@
     delete(v[3:6])
     delete(v[last 2])
 
-    # DELETEIF:
+СИНТАКСИС DELETEIF:
     deleteif(s[:, "Пол"] == "Ж")
     deleteif(s[:, 3] > 80)
     deleteif(s[10:end, "Итого"] > 100)
     deleteif(v > 20)
     deleteif(v[3:6] > 20)
+
+    # Модификаторы:
+    deleteif(m[:, "Имя"] == "ов", inside)
+    deleteif(m[:, "Имя"] == "аня", ignore)
+    deleteif(m[:, "Имя"] == "ов", inside, ignore)
+    deleteif(m[:, "ID"] == 10044, inside)
 """
 
 from ast_nodes import DeleteNode, DeleteIfNode
@@ -29,7 +34,6 @@ from errors import ArrayVatorError
 # ============================================================
 # DELETE
 # ============================================================
-
 def parse_delete(self):
     """Парсинг DELETE (только программист)"""
     self.expect('LPAREN')
@@ -59,12 +63,48 @@ def parse_delete(self):
 # ============================================================
 # DELETEIF
 # ============================================================
-
 def parse_deleteif(self):
-    """Парсинг DELETEIF (только программист)"""
+    """Парсинг DELETEIF (только программист) с модификаторами."""
     self.expect('LPAREN')
 
     condition = self.parse_expression()
 
+    # ============================================================
+    # Модификаторы (inside / ignore)
+    # ============================================================
+    inside = False
+    ignore = False
+
+    while self.check('COMMA'):
+        self.expect('COMMA')
+
+        token = self.peek()
+        if not token:
+            break
+
+        if token[0] == 'INSIDE':
+            self.expect('INSIDE')
+            inside = True
+        elif token[0] == 'IGNORE':
+            self.expect('IGNORE')
+            ignore = True
+        else:
+            raise ArrayVatorError(
+                code="DELETEIF_BAD_SYNTAX",
+                context=self._get_context(token),
+                message=(
+                    f"deleteif: неожиданный модификатор '{token[1]}'.\n"
+                    f"  Допустимо: inside, ignore."
+                ),
+                suggestion=(
+                    "Примеры:\n"
+                    "     deleteif(m[:, \"Имя\"] == \"ов\", inside)\n"
+                    "     deleteif(m[:, \"Имя\"] == \"аня\", ignore)\n"
+                    "     deleteif(m[:, \"Имя\"] == \"ов\", inside, ignore)\n"
+                    "     deleteif(m[:, \"ID\"] == 10044, inside)"
+                ),
+            )
+
     self.expect('RPAREN')
-    return DeleteIfNode(matrix=None, condition=condition)
+    return DeleteIfNode(matrix=None, condition=condition,
+                        inside=inside, ignore=ignore)

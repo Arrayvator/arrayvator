@@ -23,7 +23,7 @@ from .settings_glue import apply_font, open_settings
 from .files import (new_file, open_file, load_file,
                     save_file, save_file_as, select_all, copy_all,
                     open_find_replace, open_work_dir)
-from .runner import run_code
+from .runner import run_code, stop_program
 from .export import show_export_help
 from .help_windows import (
     open_help,
@@ -118,6 +118,10 @@ class ArrayVatorEditor:
 
     def run_code(self):
         return run_code(self)
+
+    def stop_program(self):
+        """Аварийная остановка: закрывает все show-окна, сбрасывает флаг."""
+        return stop_program(self)
 
     def show_export_help(self):
         return show_export_help(self)

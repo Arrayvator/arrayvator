@@ -56,6 +56,9 @@ def create_menu(app):
     run_menu = tk.Menu(menubar, tearoff=0)
     run_menu.add_command(label=t("menu_run_code"), accelerator="F5",
                          command=app.run_code)
+    run_menu.add_command(label="⏹  Остановить / Закрыть окна",
+                         accelerator="Ctrl+F5",
+                         command=app.stop_program)
     run_menu.add_command(label=t("menu_show_console"), accelerator="Ctrl+K",
                          command=app.console.show)
     run_menu.add_command(label=t("menu_clear_console"),
@@ -82,21 +85,18 @@ def create_menu(app):
     # ============================================================
     help_menu = tk.Menu(menubar, tearoff=0)
 
-    # --- Основное ---
     help_menu.add_command(label=t("menu_short_help"),
                           command=app.open_short_help)
     help_menu.add_command(label=t("menu_open_help"),
                           command=app.open_help)
     help_menu.add_separator()
 
-    # --- Работа с файлами справки ---
     help_menu.add_command(label=t("menu_help_folder"),
                           command=app.open_help_folder)
     help_menu.add_command(label=t("menu_help_files_info"),
                           command=app.show_help_files_info)
     help_menu.add_separator()
 
-    # --- О программе ---
     help_menu.add_command(label=t("menu_license"),
                           command=app.show_license)
     help_menu.add_command(label=t("menu_about"),

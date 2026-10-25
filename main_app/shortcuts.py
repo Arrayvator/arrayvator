@@ -14,4 +14,7 @@ def bind_shortcuts(app):
     app.root.bind('<Control-Shift-C>', lambda e: app.copy_all())
     app.root.bind('<Control-k>', lambda e: app.console.show())
     app.root.bind('<Control-e>', lambda e: app.show_export_help())
+
+    # Запуск / остановка
     app.root.bind('<F5>', lambda e: app.run_code())
+    app.root.bind('<Control-F5>', lambda e: app.stop_program())

@@ -8,6 +8,11 @@
     - НЕ мутирует исходную:
           m = deleteif(m[:, "X"] == "Y")
 
+МОДИФИКАТОРЫ (как в filterif):
+    deleteif(m[:, "Имя"] == "ов", inside)
+    deleteif(m[:, "Имя"] == "аня", ignore)
+    deleteif(m[:, "ID"] == 10044, inside)        — числовой inside
+
 НОВОЕ:
     - Если в условии используется ФУНКЦИЯ (year, month, round, len, ...),
       deleteif выдаёт ПОНЯТНУЮ ошибку с решением через addcolumn.
@@ -249,10 +254,13 @@ def _extract_target_deleteif(node, env):
 # DELETEIF NODE
 # ============================================================
 class DeleteIfNode(Node):
-    def __init__(self, matrix=None, condition=None, cells_range=None):
+    def __init__(self, matrix=None, condition=None, cells_range=None,
+                 inside=False, ignore=False):
         self.matrix = matrix
         self.condition = condition
         self.cells_range = cells_range
+        self.inside = inside
+        self.ignore = ignore
 
     def evaluate(self, env):
         if self.condition is None:
@@ -333,7 +341,8 @@ class DeleteIfNode(Node):
             from .filterif import _evaluate_condition_matrix
 
             result = _evaluate_condition_matrix(
-                self.condition, env, target_obj, row_start, row_end
+                self.condition, env, target_obj, row_start, row_end,
+                inside=self.inside, ignore=self.ignore,
             )
 
             if not isinstance(result, list):
@@ -356,7 +365,8 @@ class DeleteIfNode(Node):
             from .filterif import _evaluate_condition_vector
 
             result = _evaluate_condition_vector(
-                self.condition, env, target_obj, row_start, row_end
+                self.condition, env, target_obj, row_start, row_end,
+                inside=self.inside, ignore=self.ignore,
             )
 
             if not isinstance(result, list):
@@ -381,7 +391,8 @@ class DeleteIfNode(Node):
         from .filterif import _translate_to_sql
         import uuid
 
-        where_sql = _translate_to_sql(self.condition, env, duck_table)
+        where_sql = _translate_to_sql(self.condition, env, duck_table,
+                                       inside=self.inside, ignore=self.ignore)
 
         new_name = f"deleted_{uuid.uuid4().hex[:8]}"
         sql = f"""

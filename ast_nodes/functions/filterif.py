@@ -26,12 +26,22 @@
     filterif(m[:, "Имя"] == "аня", ignore)         — без учёта регистра
     filterif(m[:, "Имя"] == "ов", inside, ignore)  — оба
 
+    # Модификаторы для ЧИСЕЛ (inside):
+    filterif(m[:, "ID"] == 10044, inside)          — ID начинается с 10044
+    filterif(m[:, "ID"] == 10044, inside, ignore)  — ignore для чисел игнорируется
+
 ПРАВИЛА:
     - По имени [:, "Х"]      → заголовок защищён
     - По номеру [:, 3], end  → заголовок участвует
     - Явный диапазон [10:end, X] → строки 1..9 защищены
     - Все условия в and/or   → один диапазон строк, иначе ошибка
     - В условии — ОДИН столбец
+
+    - inside:
+        • строки:    подстрока (с учётом ignore)
+        • числа:     десятичное представление правого числа
+                     содержится в левом
+        • смешанные: одно приводится к строке
 
 DUCKDB:
     - Если данные в DuckDBTable → фильтрация через SQL
@@ -63,6 +73,28 @@ def _is_duckdb(val):
         return isinstance(val, DuckDBTable)
     except ImportError:
         return False
+
+
+# ============================================================
+# ХЕЛПЕР: число → строка (10044.0 → "10044", 10044 → "10044")
+# ============================================================
+def _num_to_str(v):
+    """
+    Приводит число к строке для inside-поиска.
+
+    • int            → str(v)
+    • float, целое   → str(int(v))       (10044.0 → "10044")
+    • float, дробное → str(v)            (10044.5 → "10044.5")
+    """
+    if isinstance(v, bool):
+        return str(v)
+    if isinstance(v, int):
+        return str(v)
+    if isinstance(v, float):
+        if v.is_integer():
+            return str(int(v))
+        return str(v)
+    return str(v)
 
 
 # ============================================================
@@ -243,14 +275,12 @@ def _analyze_index_node(index_node, env):
 
 def _resolve_column_for_duckdb(columns, col_spec):
     """Находит индекс столбца для DuckDB (1-based → 0-based)."""
-    # По номеру
     if isinstance(col_spec, (int, float)):
         n = int(col_spec)
         if 1 <= n <= len(columns):
             return n - 1
         return len(columns) - 1
 
-    # По имени
     if isinstance(col_spec, str):
         s = col_spec.strip().lower()
 
@@ -273,7 +303,6 @@ def _resolve_column_for_duckdb(columns, col_spec):
             except ValueError:
                 pass
 
-        # По имени столбца
         cols_lower = [str(c).lower().strip() for c in columns]
         if s in cols_lower:
             return cols_lower.index(s)
@@ -314,18 +343,46 @@ def _compare_scalar_scalar(op, a, b, inside=False, ignore=False):
     Сравнивает два значения.
 
     Модификаторы:
-        inside — только для строк и op == 'EQUALS':
-                 проверяет, что b (подстрока) содержится в a.
+        inside — для op == 'EQUALS':
+                 • строки:     подстрока (с учётом ignore)
+                 • числа:      _num_to_str(b) in _num_to_str(a)
+                 • смешанные:  одно приводится к строке
+                 ignore для чисел игнорируется (числа регистронезависимы).
         ignore — для строк: сравнение без учёта регистра.
+                 Для чисел — не влияет.
     """
     # ============================================================
-    # INSIDE: только для строк и op == 'EQUALS'
+    # INSIDE: только для строк и чисел, только op == 'EQUALS'
     # ============================================================
     if inside and op == 'EQUALS':
+        # 1. Обе строки
         if isinstance(a, str) and isinstance(b, str):
             ca = a.lower() if ignore else a
             cb = b.lower() if ignore else b
             return cb in ca
+
+        # 2. Оба числа (int/float, не bool)
+        if (isinstance(a, (int, float)) and not isinstance(a, bool)
+                and isinstance(b, (int, float)) and not isinstance(b, bool)):
+            sa = _num_to_str(a)
+            sb = _num_to_str(b)
+            return sb in sa
+
+        # 3. a — число, b — строка
+        if (isinstance(a, (int, float)) and not isinstance(a, bool)
+                and isinstance(b, str)):
+            sa = _num_to_str(a)
+            sb = b.lower() if ignore else b
+            return sb in sa
+
+        # 4. a — строка, b — число
+        if (isinstance(a, str)
+                and isinstance(b, (int, float)) and not isinstance(b, bool)):
+            sa = a.lower() if ignore else a
+            sb = _num_to_str(b)
+            return sb in sa
+
+        # 5. None / bool / прочее — не подстрока
         return False
 
     # ============================================================
@@ -699,6 +756,11 @@ def _extract_target(node, env):
 #   '85000' > '100000'  →  True   (символ '8' > '1')
 #   но
 #   85000 > 100000      →  False  (числа)
+#
+# Для inside:
+#   • левая сторона всегда CAST(... AS VARCHAR)
+#   • правая сторона — VARCHAR (число тоже приводится к VARCHAR)
+#   • LIKE '%...%'
 # ============================================================
 def _translate_to_sql(condition, env, duck_table, inside=False, ignore=False):
     """
@@ -709,8 +771,8 @@ def _translate_to_sql(condition, env, duck_table, inside=False, ignore=False):
         • строка / bool / None → CAST(col AS VARCHAR)
 
     Модификаторы:
-        inside — LIKE '%value%' (подстрока, только для строк)
-        ignore — LOWER(...) с обеих сторон
+        inside — LIKE '%value%' (подстрока, для строк и чисел)
+        ignore — LOWER(...) с обеих сторон (для строк)
     """
     from ast_nodes.index import IndexNode
     from ast_nodes.operations import BinaryOp, UnaryOp
@@ -725,6 +787,8 @@ def _translate_to_sql(condition, env, duck_table, inside=False, ignore=False):
         if isinstance(val, bool):
             s = "true" if val else "false"
             return "'" + s + "'"
+        if isinstance(val, (int, float)) and not isinstance(val, bool):
+            return "'" + _num_to_str(val) + "'"
         return "'" + str(val).replace("'", "''") + "'"
 
     def _escape_val_as_number(val):
@@ -796,14 +860,27 @@ def _translate_to_sql(condition, env, duck_table, inside=False, ignore=False):
                                        inside=inside, ignore=ignore)
             return f"({l_sql} OR {r_sql})"
 
+        # ============================================================
+        # INSIDE: LIKE '%value%'
+        # ============================================================
         if inside and op == 'EQUALS':
-            if isinstance(left, IndexNode):
+            left_is_col = isinstance(left, IndexNode)
+            right_is_col = isinstance(right, IndexNode)
+
+            # Запрет: inside при ДВУХ IndexNode
+            if left_is_col and right_is_col:
+                raise ArrayVatorError(
+                    code="FILTERIF_INSIDE_TWO_COLUMNS",
+                    context=None,
+                )
+
+            if left_is_col:
                 l_sql = _col_as_varchar(left)
             else:
                 l_val = left.evaluate(env) if hasattr(left, 'evaluate') else left
                 l_sql = _escape_val_as_str(l_val)
 
-            if isinstance(right, IndexNode):
+            if right_is_col:
                 r_sql = _col_as_varchar(right)
             else:
                 r_val = right.evaluate(env) if hasattr(right, 'evaluate') else right
@@ -813,6 +890,9 @@ def _translate_to_sql(condition, env, duck_table, inside=False, ignore=False):
                 return f"LOWER({l_sql}) LIKE LOWER('%' || {r_sql} || '%')"
             return f"{l_sql} LIKE '%' || {r_sql} || '%'"
 
+        # ============================================================
+        # ОБЫЧНЫЕ ОПЕРАТОРЫ СРАВНЕНИЯ
+        # ============================================================
         sql_ops = {
             'EQUALS': '=',
             'NOTEQUAL': '<>',

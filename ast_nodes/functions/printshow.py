@@ -138,11 +138,24 @@ class PrintShowNode:
     # СОЗДАНИЕ ОКНА
     # ============================================================
     def _show_window(self, data, title):
-        root = tk.Tk()
+        # ============================================================
+        # ОБЩИЙ КОРЕНЬ (редактор ArrayVator). НЕ создаём свой.
+        # ============================================================
+        parent = tk._default_root
+
+        if parent is None:
+            # Консольный режим — создаём единственный корень один раз
+            parent = tk.Tk()
+            parent.withdraw()
+
+        root = tk.Toplevel(parent)
         root.title(f"📊 {title}")
         root.minsize(600, 400)
         root.resizable(True, True)
         root.configure(bg="#f0f2f5")
+
+        # Закрытие → убрать из реестра (делает register_window)
+        # и не трогать главный редактор.
 
         try:
             root.update_idletasks()
@@ -341,25 +354,20 @@ class PrintShowNode:
         def draw_visible():
             canvas.delete("all")
 
-            # Размер видимой области
             view_w = canvas.winfo_width()
             view_h = canvas.winfo_height()
 
-            # Текущая позиция скролла
             x_start = canvas.canvasx(0)
             y_start = canvas.canvasy(0)
             x_end = x_start + view_w
             y_end = y_start + view_h
 
-            # Диапазон видимых строк
             row_start = max(0, int((y_start - COL_HEADER_HEIGHT) / CELL_HEIGHT) - 1)
             row_end = min(row_count, int((y_end - COL_HEADER_HEIGHT) / CELL_HEIGHT) + 2)
 
-            # Диапазон видимых столбцов
             col_start = max(0, int((x_start - ROW_HEADER_WIDTH) / CELL_WIDTH) - 1)
             col_end = min(column_count, int((x_end - ROW_HEADER_WIDTH) / CELL_WIDTH) + 2)
 
-            # Угол
             canvas.create_rectangle(
                 0, 0, ROW_HEADER_WIDTH, COL_HEADER_HEIGHT,
                 fill="#185c37", outline="#b7c9bd"
@@ -370,7 +378,6 @@ class PrintShowNode:
                 font=("Segoe UI", 8, "bold")
             )
 
-            # Заголовки столбцов (только видимые)
             for col_index in range(col_start, col_end):
                 x1 = ROW_HEADER_WIDTH + col_index * CELL_WIDTH
                 x2 = x1 + CELL_WIDTH
@@ -385,7 +392,6 @@ class PrintShowNode:
                     font=("Segoe UI", 8, "bold")
                 )
 
-            # Строки (только видимые)
             for row_index in range(row_start, row_end):
                 row = data[row_index]
                 y1 = COL_HEADER_HEIGHT + row_index * CELL_HEIGHT
@@ -394,7 +400,6 @@ class PrintShowNode:
                 row_color = (colors["row_even"] if row_index % 2 == 0
                              else colors["row_odd"])
 
-                # Номер строки (фиксирован слева)
                 canvas.create_rectangle(
                     0, y1, ROW_HEADER_WIDTH, y2,
                     fill=colors["row_header_bg"],
@@ -407,7 +412,6 @@ class PrintShowNode:
                     font=("Segoe UI", 8, "bold")
                 )
 
-                # Ячейки (только видимые)
                 for col_index in range(col_start, col_end):
                     x1 = ROW_HEADER_WIDTH + col_index * CELL_WIDTH
                     x2 = x1 + CELL_WIDTH
@@ -441,7 +445,6 @@ class PrintShowNode:
                         width=border_width
                     )
 
-                    # Обрезка длинных значений
                     display_value = value
                     max_chars = max(1, CELL_WIDTH // 7 - 1)
                     if len(display_value) > max_chars:
@@ -524,9 +527,9 @@ class PrintShowNode:
                 col_index = 0
             elif event.keysym == "End":
                 col_index = column_count - 1
-            elif event.keysym == "Prior":  # PageUp
+            elif event.keysym == "Prior":
                 row_index = max(0, row_index - 30)
-            elif event.keysym == "Next":   # PageDown
+            elif event.keysym == "Next":
                 row_index = min(row_count - 1, row_index + 30)
             else:
                 return
@@ -535,7 +538,6 @@ class PrintShowNode:
             selected_cell[1] = col_index
             update_coords()
 
-            # Прокрутка к выделенной ячейке
             target_y = COL_HEADER_HEIGHT + row_index * CELL_HEIGHT
             target_x = ROW_HEADER_WIDTH + col_index * CELL_WIDTH
 
@@ -572,7 +574,6 @@ class PrintShowNode:
         canvas.bind("<Configure>", lambda e: draw_visible())
         canvas.focus_set()
 
-        # Скролл мышью
         def on_mousewheel(event):
             if event.delta:
                 canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
@@ -676,7 +677,17 @@ class PrintShowNode:
         draw_visible()
         update_coords()
 
-        root.mainloop()
+        # ============================================================
+        # РЕГИСТРАЦИЯ ОКНА (для кнопки «Стоп»)
+        # ============================================================
+        try:
+            from main_app.runner import register_window
+            register_window(root)
+        except Exception:
+            pass
+
+        # ❗ НЕ ВЫЗЫВАЕМ root.mainloop() — mainloop уже работает
+        # в редакторе ArrayVator. Окно показывается само.
 
     # ============================================================
     # СОХРАНЕНИЕ

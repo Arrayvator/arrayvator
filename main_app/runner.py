@@ -21,6 +21,59 @@ from errors import ArrayVatorError, format_error
 _is_running = False
 
 
+# ============================================================
+# РЕЕСТР ОТКРЫТЫХ ОКОН
+# ============================================================
+# Все show-окна (printshow, chart, report) регистрируются здесь.
+# По кнопке «Стоп» или при повторном запуске — закрываем их все.
+# ============================================================
+_open_windows = set()
+
+
+def register_window(window):
+    """Регистрирует Toplevel-окно, чтобы его можно было закрыть."""
+    if window is None:
+        return
+
+    try:
+        _open_windows.add(window)
+
+        def _on_destroy(event):
+            if event.widget is window:
+                _open_windows.discard(window)
+
+        window.bind("<Destroy>", _on_destroy, add="+")
+    except Exception:
+        pass
+
+
+def close_all_windows():
+    """Закрывает все зарегистрированные окна."""
+    for w in list(_open_windows):
+        try:
+            if w.winfo_exists():
+                w.destroy()
+        except Exception:
+            pass
+    _open_windows.clear()
+
+
+def stop_program(app):
+    """Аварийная остановка: закрывает окна и сбрасывает флаг."""
+    global _is_running
+
+    close_all_windows()
+    _is_running = False
+
+    try:
+        app.console.write("\n" + "=" * 60 + "\n")
+        app.console.write("⏹ Выполнение остановлено.\n")
+        app.console.write("=" * 60 + "\n\n")
+        app.status_label.config(text="Остановлено")
+    except Exception:
+        pass
+
+
 class _ConsoleRedirector:
     """Перенаправляет stdout/stderr в консоль редактора."""
 
@@ -38,25 +91,38 @@ class _ConsoleRedirector:
 def run_code(app):
     global _is_running
 
-    # Защита от повторного запуска
+    # ============================================================
+    # 1. Защита от повторного запуска
+    # ============================================================
     if _is_running:
-        messagebox.showwarning(
+        ans = messagebox.askyesno(
             t("dlg_warning"),
-            "Программа уже выполняется.\n"
-            "Закройте все окна (графики, printshow) и попробуйте снова."
-            if t("app_title").startswith("ArrayVator Редактор")
+            "Программа уже выполняется.\n\n"
+            "Закрыть все открытые окна и запустить заново?"
+            if t("app_title").startswith("ArrayVator Р")
             else
-            "Program is already running.\n"
-            "Close all windows (charts, printshow) and try again."
+            "Program is already running.\n\n"
+            "Close all open windows and run again?"
         )
-        return
+        if not ans:
+            return
 
+        close_all_windows()
+        _is_running = False
+
+    # ============================================================
+    # 2. Проверка кода
+    # ============================================================
     code = app.editor.get(1.0, tk.END)
     if not code.strip():
         messagebox.showwarning(t("dlg_warning"), t("dlg_no_code"))
         return
 
+    # ============================================================
+    # 3. Запуск
+    # ============================================================
     _is_running = True
+    close_all_windows()
 
     app.console.show()
     app.console.write("\n" + "=" * 60 + "\n")
@@ -114,7 +180,7 @@ def run_code(app):
                 func_hint = get_function_hint(source_line)
                 if func_hint:
                     app.console.write("\n")
-                    app.console.write_hint(func_hint['text'] + "\n")
+                    app.console.write_hint(func_hint["text"] + "\n")
 
         app.status_label.config(text=t("status_error"))
 

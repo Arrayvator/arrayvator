@@ -1,25 +1,4 @@
 # ast_nodes/functions/addcolumn.py
-"""
-Функция ADDCOLUMN — добавляет новый столбец в таблицу.
-
-СИНТАКСИС:
-    m2 = addcolumn(m, "Сумма", m[:, "ID"] + m[:, "ID_10"])
-    m2 = addcolumn(m, "Год", 2024)
-    m2 = addcolumn(m, "Статус", "новый")
-    m2 = addcolumn(m, "Доля_%", percentof(m[:, "Продажи"]))
-
-ПРАВИЛА:
-    - Всегда возвращает НОВУЮ таблицу.
-    - Работает с Matrix (в RAM) и DuckDB (через SQL).
-    - Имя столбца — строка в кавычках.
-    - Значение — скаляр, вектор (построчно) или выражение.
-
-ВАЖНО:
-    Вектор из функции (например, year(m[:, "Дата"]) или
-    hour(m[:, "Время"])) НЕ содержит заголовка — только данные.
-    Поэтому при заполнении строки i берём vec_data[i - 1].
-"""
-
 from ..base import Node
 from runtime.matrix import MatrExMatrix
 
@@ -33,78 +12,254 @@ def _is_duckdb(val):
 
 
 class AddColumnNode(Node):
-    def __init__(self, data, name, expr):
-        self.data = data
-        self.name = name
-        self.expr = expr
+    """
+    ADDCOLUMN — гибкое добавление столбцов.
+
+    РЕЖИМЫ (определяются по типам аргументов args[1], args[2]):
+
+        1. addcolumn(m, "Имя", expr)
+           args[1] — str, args[2] — любое выражение (скаляр / вектор / срез)
+           → ОДИН столбец с заголовком "Имя", заполненный expr.
+
+        2. addcolumn(m, "Имя")
+           args[1] — str, args[2] нет
+           → ОДИН столбец с заголовком "Имя", значения None.
+
+        3. addcolumn(m, N)
+           args[1] — int, args[2] нет
+           → N ПУСТЫХ столбцов (заголовки None, значения None).
+
+        4. addcolumn(m, N, fill)
+           args[1] — int, args[2] — скаляр
+           → N столбцов, заполненных fill (заголовки None).
+
+    Работает с Matrix и DuckDB.
+    """
+
+    def __init__(self, args):
+        self.args = args
 
     def evaluate(self, env):
-        # 1. Определяем данные
-        data_obj = self.data.evaluate(env) if hasattr(self.data, 'evaluate') else self.data
+        if not self.args:
+            raise TypeError("addcolumn: нет аргументов.")
 
-        # 2. Имя нового столбца
-        name_val = (self.name.evaluate(env)
-                    if hasattr(self.name, 'evaluate')
-                    else self.name)
-        if not isinstance(name_val, str):
-            raise TypeError(
-                f"addcolumn: имя столбца должно быть строкой, "
-                f"получено {type(name_val).__name__}"
+        # ============================================================
+        # 1. Матрица
+        # ============================================================
+        data_obj = (self.args[0].evaluate(env)
+                    if hasattr(self.args[0], 'evaluate')
+                    else self.args[0])
+
+        # ============================================================
+        # 2. Второй аргумент: имя (str) или количество (int)
+        # ============================================================
+        arg1_val = (self.args[1].evaluate(env)
+                    if hasattr(self.args[1], 'evaluate')
+                    else self.args[1])
+
+        # ============================================================
+        # 3. Режим 4: addcolumn(m, N, fill)
+        #    args[1] — int, args[2] — скаляр
+        # ============================================================
+        if len(self.args) == 3 and isinstance(arg1_val, (int, float)) \
+                and not isinstance(arg1_val, bool):
+            n = int(arg1_val)
+            if n < 0:
+                raise ValueError(f"addcolumn: N не может быть отрицательным: {n}")
+
+            fill_val = (self.args[2].evaluate(env)
+                        if hasattr(self.args[2], 'evaluate')
+                        else self.args[2])
+
+            if not self._is_scalar_value(fill_val):
+                raise TypeError(
+                    "addcolumn: при добавлении N столбцов значение должно "
+                    "быть скаляром.\n"
+                    f"  Получено: {type(fill_val).__name__}\n"
+                    "  Пример: addcolumn(m, 2, 0)"
+                )
+
+            return self._add_n_columns(
+                data_obj, n, fill_val,
+                name_arg=None, env=env
             )
 
-        # 3. DuckDB → SQL
-        if _is_duckdb(data_obj):
-            return self._addcolumn_duckdb(data_obj, name_val, env)
+        # ============================================================
+        # 4. Режим 3: addcolumn(m, N) — N ПУСТЫХ столбцов
+        # ============================================================
+        if len(self.args) == 2 and isinstance(arg1_val, (int, float)) \
+                and not isinstance(arg1_val, bool):
+            n = int(arg1_val)
+            if n < 0:
+                raise ValueError(f"addcolumn: N не может быть отрицательным: {n}")
 
-        # 4. Matrix → RAM
-        if hasattr(data_obj, 'data') and data_obj.is_2d:
-            return self._addcolumn_matrix(data_obj, name_val, env)
+            return self._add_n_columns(
+                data_obj, n, None,
+                name_arg=None, env=env
+            )
 
+        # ============================================================
+        # 5. Режим 2: addcolumn(m, "Имя") — один столбец, значения None
+        # ============================================================
+        if len(self.args) == 2 and isinstance(arg1_val, str):
+            return self._add_one_named_column(
+                data_obj, arg1_val, None, env
+            )
+
+        # ============================================================
+        # 6. Режим 1: addcolumn(m, "Имя", expr) — один столбец
+        # ============================================================
+        if len(self.args) == 3 and isinstance(arg1_val, str):
+            return self._add_one_named_column(
+                data_obj, arg1_val, self.args[2], env
+            )
+
+        # ============================================================
+        # 7. Ошибка: непонятная комбинация
+        # ============================================================
         raise TypeError(
-            "addcolumn: ожидается матрица или DuckDB.\n"
-            "  Пример: m2 = addcolumn(m, \"Сумма\", m[:, \"ID\"] + m[:, \"ID_10\"])"
+            "addcolumn: неверные аргументы.\n"
+            f"  args[1] = {type(arg1_val).__name__} ({arg1_val!r})\n"
+            f"  args[2] = {'—' if len(self.args) < 3 else 'есть'}\n"
+            "\n"
+            "Допустимо:\n"
+            "  addcolumn(m, \"Имя\", expr)\n"
+            "  addcolumn(m, \"Имя\")\n"
+            "  addcolumn(m, N)\n"
+            "  addcolumn(m, N, fill)"
         )
 
     # ============================================================
-    # MATRIX
+    # УТИЛИТЫ
     # ============================================================
-    def _addcolumn_matrix(self, matrix_obj, name_val, env):
-        result_data = [list(row) for row in matrix_obj.data]
+    def _is_scalar_value(self, v):
+        return isinstance(v, (int, float, str, bool)) or v is None
+
+    # ============================================================
+    # РЕЖИМ: N столбцов (пустых или с fill)
+    # ============================================================
+    def _add_n_columns(self, data_obj, n, fill_val, name_arg, env):
+        if n == 0:
+            return data_obj
+
+        # ---------------- DuckDB ----------------
+        if _is_duckdb(data_obj):
+            return self._add_n_columns_duckdb(data_obj, n, fill_val)
+
+        # ---------------- Matrix ----------------
+        if hasattr(data_obj, 'data') and data_obj.is_2d:
+            return self._add_n_columns_matrix(data_obj, n, fill_val)
+
+        raise TypeError(
+            "addcolumn: ожидается матрица или DuckDB.\n"
+            "  Пример: m2 = addcolumn(m, 2)"
+        )
+
+    def _add_n_columns_matrix(self, matrix_obj, n, fill_val):
+        result_data = [
+            list(row) if isinstance(row, list) else [row]
+            for row in matrix_obj.data
+        ]
 
         if matrix_obj.rows > 0:
-            header = result_data[0]
-            header.append(name_val)
+            for _ in range(n):
+                result_data[0].append(None)   # заголовки None
 
-        # ============================================================
-        # ПРОБУЕМ ВЫЧИСЛИТЬ ВЫРАЖЕНИЕ ЦЕЛИКОМ
-        # ============================================================
-        # Возможные типы результата:
-        #   • Скаляр (число, строка, bool, None) — заполнить все ячейки
-        #   • Вектор (is_2d=False) — построчно
-        #     ⚠️ Вектор из функций (year, hour, month, ...) приходит БЕЗ заголовка,
-        #        то есть vec_data[0] — данные первой строки.
-        #   • 2D-матрица (is_2d=True) — берём ПЕРВУЮ КОЛОНКУ,
-        #     первую строку (заголовок) пропускаем
-        # ============================================================
-        vec_data = None       # список значений для строк данных
-        scalar_value = None   # скаляр — заполнить все ячейки
+        for i in range(1, len(result_data)):
+            for _ in range(n):
+                result_data[i].append(fill_val)
+
+        return MatrExMatrix(result_data, True)
+
+    def _add_n_columns_duckdb(self, duck_table, n, fill_val):
+        from duckdb_engine import DuckDBTable
+        import uuid
+
+        def _escape_val(val):
+            if val is None:
+                return "NULL"
+            if isinstance(val, bool):
+                return "TRUE" if val else "FALSE"
+            if isinstance(val, (int, float)):
+                return str(val)
+            return "'" + str(val).replace("'", "''") + "'"
+
+        columns = duck_table.get_columns()
+        val_sql = _escape_val(fill_val)
+
+        # Генерируем имена: __new_1, __new_2, ...
+        new_cols_sql = []
+        for k in range(1, n + 1):
+            new_cols_sql.append(f'{val_sql} AS "__new_{k}"')
+
+        new_name = f"addcol_{uuid.uuid4().hex[:8]}"
+        sql = f"""
+            CREATE OR REPLACE VIEW {new_name} AS
+            SELECT *, {', '.join(new_cols_sql)}
+            FROM {duck_table.table_name}
+        """
+
+        try:
+            duck_table.con.execute(sql)
+        except Exception as e:
+            raise RuntimeError(
+                f"Ошибка addcolumn (N столбцов): {e}\n"
+                f"  SQL: {sql}"
+            )
+
+        return self._make_new_table(duck_table, new_name)
+
+    # ============================================================
+    # РЕЖИМ: один столбец с именем
+    # ============================================================
+    def _add_one_named_column(self, data_obj, name_val, expr_node, env):
+        # ---------------- DuckDB ----------------
+        if _is_duckdb(data_obj):
+            return self._add_one_named_duckdb(data_obj, name_val, expr_node, env)
+
+        # ---------------- Matrix ----------------
+        if hasattr(data_obj, 'data') and data_obj.is_2d:
+            return self._add_one_named_matrix(data_obj, name_val, expr_node, env)
+
+        raise TypeError(
+            "addcolumn: ожидается матрица или DuckDB.\n"
+            "  Пример: m2 = addcolumn(m, \"Сумма\", m[:, \"A\"] + m[:, \"B\"])"
+        )
+
+    def _add_one_named_matrix(self, matrix_obj, name_val, expr_node, env):
+        result_data = [
+            list(row) if isinstance(row, list) else [row]
+            for row in matrix_obj.data
+        ]
+
+        if matrix_obj.rows > 0:
+            result_data[0].append(name_val)
+
+        # ------------------------------------------------
+        # expr_node is None → столбец из None
+        # ------------------------------------------------
+        if expr_node is None:
+            for i in range(1, len(result_data)):
+                result_data[i].append(None)
+            return MatrExMatrix(result_data, True)
+
+        # ------------------------------------------------
+        # expr_node задан → вычисляем
+        # ------------------------------------------------
+        vec_data = None
+        scalar_value = None
         is_scalar = False
 
         try:
-            full_val = (self.expr.evaluate(env)
-                        if hasattr(self.expr, 'evaluate')
-                        else self.expr)
+            full_val = (expr_node.evaluate(env)
+                        if hasattr(expr_node, 'evaluate')
+                        else expr_node)
 
-            # Скаляр
-            if isinstance(full_val, (int, float, str, bool)) or full_val is None:
+            if self._is_scalar_value(full_val):
                 is_scalar = True
                 scalar_value = full_val
-
-            # Вектор (1D)
             elif hasattr(full_val, 'data') and not full_val.is_2d:
                 vec_data = list(full_val.data)
-
-            # Матрица (2D) — берём ПЕРВУЮ КОЛОНКУ
             elif hasattr(full_val, 'data') and full_val.is_2d:
                 col0 = []
                 for row in full_val.data:
@@ -115,18 +270,11 @@ class AddColumnNode(Node):
                     else:
                         col0.append(row)
                 vec_data = col0
-
         except Exception:
             vec_data = None
             is_scalar = False
 
-        # ============================================================
-        # ЗАПОЛНЯЕМ
-        # ============================================================
-        # ВАЖНО: для строки i (1-based, начиная с 1) берём vec_data[i - 1].
-        # Потому что vec_data[0] — это значение для строки 1 (первой строки данных).
-        # ============================================================
-        for i in range(1, matrix_obj.rows):
+        for i in range(1, len(result_data)):
             if is_scalar:
                 value = scalar_value
             elif vec_data is not None:
@@ -136,27 +284,66 @@ class AddColumnNode(Node):
                 else:
                     value = None
             else:
-                value = self._eval_expr(self.expr, matrix_obj, i, env)
+                value = self._eval_expr(expr_node, matrix_obj, i, env)
 
-            while len(result_data[i]) < len(result_data[0]):
-                result_data[i].append(None)
-            result_data[i][-1] = value
+            result_data[i].append(value)
 
         return MatrExMatrix(result_data, True)
 
+    def _add_one_named_duckdb(self, duck_table, name_val, expr_node, env):
+        from duckdb_engine import DuckDBTable
+        import uuid
+
+        columns = duck_table.get_columns()
+
+        if expr_node is None:
+            expr_sql = "NULL"
+        else:
+            expr_sql = self._translate_to_sql(expr_node, env, duck_table, columns)
+
+        safe_name = '"' + str(name_val).replace('"', '""') + '"'
+
+        new_name = f"addcol_{uuid.uuid4().hex[:8]}"
+        sql = f"""
+            CREATE OR REPLACE VIEW {new_name} AS
+            SELECT *, ({expr_sql}) AS {safe_name}
+            FROM {duck_table.table_name}
+        """
+
+        try:
+            duck_table.con.execute(sql)
+        except Exception as e:
+            raise RuntimeError(
+                f"Ошибка addcolumn: {e}\n"
+                f"  SQL: {sql}"
+            )
+
+        return self._make_new_table(duck_table, new_name)
+
+    # ============================================================
+    # ОБЩИЙ ХЕЛПЕР: новый DuckDBTable
+    # ============================================================
+    def _make_new_table(self, duck_table, new_name):
+        from duckdb_engine import DuckDBTable
+        new_table = DuckDBTable.__new__(DuckDBTable)
+        new_table.path = duck_table.path
+        new_table.table_name = new_name
+        new_table.con = duck_table.con
+        new_table.utf8_path = duck_table.utf8_path
+        new_table.is_temp = False
+        new_table._tmp_path = None
+        return new_table
+
+    # ============================================================
+    # СТАРЫЕ ХЕЛПЕРЫ (переносим без изменений)
+    # ============================================================
     def _eval_expr(self, expr, matrix_obj, row_idx, env):
         from ast_nodes.index import IndexNode
         from ast_nodes.operations import BinaryOp, UnaryOp
 
-        # ============================================================
-        # IndexNode: m[:, "X"] → значение для текущей строки
-        # ============================================================
         if isinstance(expr, IndexNode):
             return self._get_cell(expr, matrix_obj, row_idx, env)
 
-        # ============================================================
-        # BinaryOp: поэлементно (left op right)
-        # ============================================================
         if isinstance(expr, BinaryOp):
             left = self._eval_expr(expr.left, matrix_obj, row_idx, env)
             right = self._eval_expr(expr.right, matrix_obj, row_idx, env)
@@ -198,9 +385,6 @@ class AddColumnNode(Node):
             except Exception:
                 return None
 
-        # ============================================================
-        # UnaryOp: -x, not x
-        # ============================================================
         if isinstance(expr, UnaryOp):
             right = self._eval_expr(expr.right, matrix_obj, row_idx, env)
             if expr.op == 'MINUS':
@@ -212,13 +396,6 @@ class AddColumnNode(Node):
                 return not right
             return right
 
-        # ============================================================
-        # ФУНКЦИИ-ОБЁРТКИ: round, int, frac, frac_digits
-        # ============================================================
-        # Идея: у этих функций ОДИН основной аргумент (плюс опциональные
-        # параметры-скаляры, например digits у round). Мы вычисляем
-        # основной аргумент построчно, а потом применяем функцию.
-        # ============================================================
         from ast_nodes.functions.math import (
             RoundNode, IntNode, FracNode, FracDigitsNode,
         )
@@ -258,7 +435,6 @@ class AddColumnNode(Node):
                     frac = inner - math.trunc(inner)
                     if digits is not None:
                         return round(frac, int(digits))
-                    # Автоопределение по строковому виду (как в FracNode)
                     str_val = str(inner)
                     if '.' in str_val and 'e' not in str_val.lower():
                         auto = len(str_val.split('.')[1])
@@ -284,9 +460,6 @@ class AddColumnNode(Node):
                 return 0
             return inner
 
-        # ============================================================
-        # Fallback: скаляр, вычисляем как есть
-        # ============================================================
         return expr.evaluate(env) if hasattr(expr, 'evaluate') else expr
 
     def _get_cell(self, index_node, matrix_obj, row_idx, env):
@@ -309,44 +482,6 @@ class AddColumnNode(Node):
             if col_idx < len(row):
                 return row[col_idx]
         return None
-
-    # ============================================================
-    # DUCKDB
-    # ============================================================
-    def _addcolumn_duckdb(self, duck_table, name_val, env):
-        from duckdb_engine import DuckDBTable
-        import uuid
-
-        columns = duck_table.get_columns()
-
-        expr_sql = self._translate_to_sql(self.expr, env, duck_table, columns)
-
-        safe_name = '"' + str(name_val).replace('"', '""') + '"'
-
-        new_name = f"addcol_{uuid.uuid4().hex[:8]}"
-        sql = f"""
-            CREATE OR REPLACE VIEW {new_name} AS
-            SELECT *, ({expr_sql}) AS {safe_name}
-            FROM {duck_table.table_name}
-        """
-
-        try:
-            duck_table.con.execute(sql)
-        except Exception as e:
-            raise RuntimeError(
-                f"Ошибка addcolumn: {e}\n"
-                f"  SQL: {sql}"
-            )
-
-        new_table = DuckDBTable.__new__(DuckDBTable)
-        new_table.path = duck_table.path
-        new_table.table_name = new_name
-        new_table.con = duck_table.con
-        new_table.utf8_path = duck_table.utf8_path
-        new_table.is_temp = False
-        new_table._tmp_path = None
-
-        return new_table
 
     def _translate_to_sql(self, expr, env, duck_table, columns):
         from ast_nodes.index import IndexNode
@@ -404,9 +539,6 @@ class AddColumnNode(Node):
                 return f"(NOT {inner})"
             return inner
 
-        # ============================================================
-        # ФУНКЦИИ-ОБЁРТКИ: round, int, frac, frac_digits
-        # ============================================================
         from ast_nodes.functions.math import (
             RoundNode, IntNode, FracNode, FracDigitsNode,
         )
@@ -443,10 +575,13 @@ class AddColumnNode(Node):
 
         if isinstance(expr, FracDigitsNode):
             inner = self._translate_to_sql(expr.arg, env, duck_table, columns)
-            return f"CAST(SUBSTR(CAST(({inner}) - CAST(({inner}) AS BIGINT) AS VARCHAR), 3) AS BIGINT)"
+            return (
+                f"CAST(SUBSTR(CAST(({inner}) - CAST(({inner}) AS BIGINT) "
+                f"AS VARCHAR), 3) AS BIGINT)"
+            )
 
         val = expr.evaluate(env) if hasattr(expr, 'evaluate') else expr
         return _escape_val(val)
 
     def __repr__(self):
-        return f"addcolumn({self.data}, {self.name}, {self.expr})"
+        return f"addcolumn({len(self.args)} args)"

@@ -157,6 +157,38 @@ class AssignNode(Node):
 
         return idx
 
+    # ============================================================
+    # ВСПОМОГАТЕЛЬНЫЕ: как выглядит спецификация
+    # ============================================================
+    def _is_explicit_new_col_end_plus(self, col_spec):
+        """
+        True, если col_spec — строка вида 'end+N' (N >= 1).
+        Это ЯВНОЕ создание нового столбца.
+        """
+        if not isinstance(col_spec, str):
+            return False
+        s = col_spec.strip().lower()
+        return s.startswith('end+')
+
+    def _resolve_header_index(self, matrix_obj, col_spec):
+        """
+        Если col_spec — имя, найденное в заголовках, вернёт 0-based
+        индекс. Иначе None.
+        """
+        if not isinstance(col_spec, str):
+            return None
+        if matrix_obj.rows == 0:
+            return None
+
+        headers = matrix_obj.data[0]
+        target = col_spec.strip().lower()
+        for j, h in enumerate(headers):
+            if h is None:
+                continue
+            if str(h).strip().lower() == target:
+                return j
+        return None
+
     def _assign_range(self, matrix, row_start, row_end, col_start, col_end, value,
                       fill_rest_none=False):
         """
@@ -546,8 +578,28 @@ class AssignNode(Node):
 
     # ============================================================
     # _assign_double
+    #
+    # ПРАВИЛА (после рефакторинга):
+    #
+    #   1. Столбец может быть:
+    #      • all / ':'                    — все столбцы
+    #      • число                        — конкретный столбец
+    #      • 'end', 'end-N', 'last N'     — конкретный столбец
+    #      • 'end+N'                      — ЯВНО новый столбец (заполняем все)
+    #      • имя из заголовков            — конкретный столбец
+    #      • имя, которого нет в заголовках — ЯВНО новый столбец (заполняем все)
+    #      • диапазон 'a:b'               — несколько столбцов
+    #
+    #   2. Запись в ОДНУ ячейку (r='single', c='single') — расширяет
+    #      матрицу при необходимости, но значение НЕ РАЗМНОЖАЕТ.
+    #
+    #   3. Запись в ЦЕЛУЮ СТРОКУ (r='single', c='all') — c=all,
+    #      значения по вектору заполняют подряд, остаток — None.
+    #
+    #   4. Запись в ЦЕЛЫЙ СТОЛБЕЦ (r='all', c='single') — если это
+    #      ЯВНО новый столбец — заголовок + значения; если конкретный
+    #      существующий — пишем туда.
     # ============================================================
-
     def _assign_double(self, matrix_obj, row, col, val):
         if hasattr(row, 'evaluate'):
             try:
@@ -560,11 +612,10 @@ class AssignNode(Node):
             except:
                 pass
 
+        # ------------------------------------------------------------
+        # 1. Разбор строки (row)
+        # ------------------------------------------------------------
         row_processed = self._process_special_index(row, matrix_obj.rows) if isinstance(row, str) else row
-        col_processed = self._process_special_index(col, matrix_obj.cols) if isinstance(col, str) else col
-
-        is_new_row_name = False
-        new_row_name = None
 
         if row_processed == 'all' or row == 'all':
             r_kind = 'all'
@@ -582,36 +633,19 @@ class AssignNode(Node):
             r_kind = 'range'
             r_start, r_end = self._parse_range(row_processed, matrix_obj.rows)
         elif isinstance(row_processed, str):
-            # ============================================================
-            # ИМЯ СТРОКИ — ТОЛЬКО ПОИСК, БЕЗ СОЗДАНИЯ
-            # ============================================================
-            # Ищем значение в первом столбце (строки данных, начиная с 1).
-            # Если нашли — берём его позицию (1-based).
-            # Если НЕ нашли — ОШИБКА (не создаём новую строку).
-            #
-            # ПРИЧИНА: строк может быть сотни миллионов.
-            # Автосоздание по имени было бы опасно — опечатка
-            # создавала бы мусорную строку в огромной таблице.
-            # ============================================================
+            # Поиск строки по имени — БЕЗ автосоздания.
             found_row = None
             name_lower = row_processed.strip().lower()
             for i in range(1, len(matrix_obj.data)):
                 if i < len(matrix_obj.data[i]) and len(matrix_obj.data[i]) > 0:
                     cell = matrix_obj.data[i][0]
                     if cell is not None and str(cell).strip().lower() == name_lower:
-                        found_row = i + 1     # 1-based
+                        found_row = i + 1
                         break
 
             if found_row is None:
-                # ============================================================
-                # Собираем список доступных имён — ОГРАНИЧЕННО
-                # ============================================================
-                # Не «все имена», а только первые PREVIEW_LIMIT,
-                # иначе на миллионах строк список растянется на экран.
-                # ============================================================
                 available = []
-                total_rows = len(matrix_obj.data) - 1   # без заголовка
-
+                total_rows = len(matrix_obj.data) - 1
                 for i in range(1, min(len(matrix_obj.data), PREVIEW_LIMIT + 1)):
                     if i < len(matrix_obj.data[i]) and len(matrix_obj.data[i]) > 0:
                         cell = matrix_obj.data[i][0]
@@ -650,6 +684,25 @@ class AssignNode(Node):
             r_start = 1
             r_end = 1
 
+        # ------------------------------------------------------------
+        # 2. Разбор столбца (col)
+        #
+        # Ключевой момент: определяем ЯВНО ЛИ это новый столбец.
+        # Новый столбец — ТОЛЬКО:
+        #   • 'end+N' (N >= 1)
+        #   • имя, которого нет в заголовках
+        # Конкретный номер (int), 'end', 'end-N', 'last N' — это
+        # ВСЕГДА существующий/расширяемый столбец, НЕ новый.
+        # ------------------------------------------------------------
+        col_processed = (
+            self._process_special_index(col, matrix_obj.cols)
+            if isinstance(col, str) else col
+        )
+
+        is_explicit_new_col = False
+        header_index_for_name = None
+        header_name_to_set = None
+
         if col_processed == 'all' or col == 'all':
             c_kind = 'all'
             c_start = 1
@@ -666,55 +719,72 @@ class AssignNode(Node):
             c_kind = 'range'
             c_start, c_end = self._parse_range(col_processed, matrix_obj.cols)
         elif isinstance(col_processed, str):
-            headers = matrix_obj.data[0] if matrix_obj.rows > 0 else []
-            headers_lower = [str(h).lower() if h is not None else None for h in headers]
-            if col_processed.lower() in headers_lower:
+            s = col_processed.strip()
+            s_lower = s.lower()
+
+            if s_lower.startswith('end+'):
+                # ЯВНО новый столбец
+                is_explicit_new_col = True
+                try:
+                    n = int(s_lower[4:].strip())
+                except ValueError:
+                    n = 1
                 c_kind = 'single'
-                c_start = headers_lower.index(col_processed.lower()) + 1
+                c_start = matrix_obj.cols + n
                 c_end = c_start
-                if r_kind == 'all':
-                    r_start = max(r_start, 2)
+                # header_name не ставим — end+N без имени
+
+            elif s_lower in ('end',) or s_lower.startswith('end-') or s_lower.startswith('last'):
+                # Конкретный существующий столбец (или расширение в 1)
+                # (эти случаи уже обработаны _process_special_index, но на
+                # всякий случай оставим fallback)
+                c_kind = 'single'
+                c_start = matrix_obj.cols
+                c_end = c_start
+
             else:
-                c_kind = 'single'
-                c_start = matrix_obj.cols + 1
-                c_end = c_start
+                # Это ИМЯ. Проверяем, есть ли в заголовках.
+                h_idx = self._resolve_header_index(matrix_obj, s)
+                if h_idx is not None:
+                    # Нашли — это существующий столбец
+                    c_kind = 'single'
+                    c_start = h_idx + 1
+                    c_end = c_start
+                    header_index_for_name = h_idx
+                    if r_kind == 'all':
+                        r_start = max(r_start, 2)
+                else:
+                    # Не нашли — ЯВНО новый столбец
+                    is_explicit_new_col = True
+                    c_kind = 'single'
+                    c_start = matrix_obj.cols + 1
+                    c_end = c_start
+                    header_name_to_set = s
         else:
             c_kind = 'single'
             c_start = 1
             c_end = 1
 
-        # ============================================================
-        # НОВЫЙ СТОЛБЕЦ
-        # ============================================================
-        is_new_column = (c_kind == 'single' and c_start == matrix_obj.cols + 1)
-
-        if is_new_column:
-            # 1. Расширяем матрицу
+        # ------------------------------------------------------------
+        # 3. ЕСЛИ ЯВНО НОВЫЙ СТОЛБЕЦ — создаём и заполняем все строки
+        # ------------------------------------------------------------
+        if is_explicit_new_col:
             if c_end > matrix_obj.cols:
                 self._ensure_cols(matrix_obj, c_end)
 
-            # 2. Устанавливаем заголовок
-            header_name = None
-            if isinstance(col_processed, str):
-                s = col_processed.strip().lower()
-                if (s not in ('all', ':', 'end')
-                        and not s.startswith('end+')
-                        and not s.startswith('end-')
-                        and not s.startswith('last')):
-                    header_name = col_processed
-
+            # Заголовок
             if matrix_obj.rows > 0 and len(matrix_obj.data[0]) > c_start - 1:
-                matrix_obj.data[0][c_start - 1] = header_name
+                matrix_obj.data[0][c_start - 1] = header_name_to_set
 
-            # 3. Заполняем данными
+            # Значения
             if self._is_scalar(val):
                 for i in range(1, matrix_obj.rows):
-                    while len(matrix_obj.data[i]) <= c_start - 1:
-                        matrix_obj.data[i].append(None)
-                    matrix_obj.data[i][c_start - 1] = val
+                    if i < len(matrix_obj.data):
+                        while len(matrix_obj.data[i]) <= c_start - 1:
+                            matrix_obj.data[i].append(None)
+                        matrix_obj.data[i][c_start - 1] = val
                 return
 
-            # Вектор (1D)
             is_vector = False
             vector_data = None
             if hasattr(val, 'data') and not val.is_2d:
@@ -736,12 +806,12 @@ class AssignNode(Node):
                             matrix_obj.data[i][c_start - 1] = None
                 return
 
-            # 2D-матрица — заполняем как обычно, но заголовок уже стоит
+            # 2D-матрица — используем общую логику ниже (fallthrough),
+            # но заголовок уже стоит.
 
         # ============================================================
-        # СТАРАЯ ЛОГИКА
+        # 4. СТАРАЯ ЛОГИКА (для существующих столбцов / диапазонов)
         # ============================================================
-
         if isinstance(val, RandomSource):
             rows_count = r_end - r_start + 1
             cols_count = c_end - c_start + 1
@@ -760,45 +830,42 @@ class AssignNode(Node):
         else:
             val_data = val
 
+        # ============================================================
+        # 4.1. ОДНА ЯЧЕЙКА: расширяем, но пишем ровно в одну
+        # ============================================================
+        if r_kind == 'single' and c_kind == 'single':
+            # Расширяем матрицу до нужных размеров
+            if r_start > matrix_obj.rows:
+                self._ensure_rows(matrix_obj, r_start)
+            if c_start > matrix_obj.cols:
+                self._ensure_cols(matrix_obj, c_start)
+
+            # Пишем ровно в одну ячейку
+            if r_start - 1 < len(matrix_obj.data):
+                row_list = matrix_obj.data[r_start - 1]
+                if c_start - 1 < len(row_list):
+                    if self._is_scalar(val):
+                        row_list[c_start - 1] = val
+                    elif isinstance(val_data, list) and val_data:
+                        if isinstance(val_data[0], list):
+                            row_list[c_start - 1] = val_data[0][0] if val_data[0] else None
+                        else:
+                            row_list[c_start - 1] = val_data[0]
+            return
+
+        # ============================================================
+        # 4.2. ДИАПАЗОНЫ (диапазон строк, диапазон столбцов, all, ...)
+        # ============================================================
         if r_end > matrix_obj.rows:
             self._ensure_rows(matrix_obj, r_end)
         if c_end > matrix_obj.cols:
             self._ensure_cols(matrix_obj, c_end)
-
-        if r_kind == 'single' and c_kind == 'single':
-            if self._is_scalar(val):
-                if r_start - 1 < len(matrix_obj.data) and c_start - 1 < len(matrix_obj.data[r_start - 1]):
-                    matrix_obj.data[r_start - 1][c_start - 1] = val
-            elif isinstance(val_data, list) and val_data:
-                if r_start - 1 < len(matrix_obj.data) and c_start - 1 < len(matrix_obj.data[r_start - 1]):
-                    matrix_obj.data[r_start - 1][c_start - 1] = val_data[0] if not isinstance(val_data[0], list) else val_data[0][0]
-
-            # Восстанавливаем имя новой строки
-            if is_new_row_name and new_row_name is not None:
-                if r_start - 1 < len(matrix_obj.data):
-                    while len(matrix_obj.data[r_start - 1]) < 1:
-                        matrix_obj.data[r_start - 1].append(None)
-                    matrix_obj.data[r_start - 1][0] = new_row_name
-            return
 
         # Для строк: если r — single и c — all → затирать остаток None
         fill_rest = (r_kind == 'single' and c_kind == 'all')
 
         self._assign_range(matrix_obj, r_start, r_end, c_start, c_end, val,
                            fill_rest_none=fill_rest)
-
-        # ============================================================
-        # ВОССТАНОВИТЬ ИМЯ НОВОЙ СТРОКИ
-        # ============================================================
-        # _assign_range могла затереть первый столбец значением.
-        # Восстанавливаем имя новой строки.
-        # ============================================================
-        if is_new_row_name and new_row_name is not None:
-            row_idx = r_start - 1
-            if row_idx < len(matrix_obj.data):
-                while len(matrix_obj.data[row_idx]) < 1:
-                    matrix_obj.data[row_idx].append(None)
-                matrix_obj.data[row_idx][0] = new_row_name
 
     def __repr__(self):
         if self.is_index:
